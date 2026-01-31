@@ -39,3 +39,15 @@ Fields:
 - `uri` (string): location or reference to the evidence
 - `captured_at` (timestamp): when the evidence was captured or observed
 - `metadata` (map<string, string>): auxiliary provenance metadata
+### Validation
+
+Represents a human validator’s assessment of a TruthBit using one or more Evidence items.
+
+Fields:
+- `id` (string, immutable): globally unique identifier
+- `truthbit_id` (string): identifier of the TruthBit being validated
+- `evidence_ids` (list<string>): identifiers of Evidence used in this validation
+- `extracted_value` (string): value extracted or observed by the validator
+- `notes` (string): optional validator notes or rationale
+- `created_at` (timestamp): when the validation was submitted
+- `created_by` (string): validator identifier (opaque in v0.1)
