@@ -18,6 +18,8 @@ Fields:
 - `text` (string): human-readable claim statement
 - `created_at` (timestamp): when the claim was created
 - `created_by` (string): submitter identifier (opaque in v0.1)
+- `decomposition_status` (string): decomposition state (pending, in_progress, complete, failed)
+
 ### TruthBit
 
 Represents a minimal, independently verifiable unit derived from a Claim.
