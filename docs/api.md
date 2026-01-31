@@ -7,3 +7,14 @@
 - **Versioned contracts**: breaking changes require a new major version
 - **Human-in-the-loop**: automated assistance may exist, but verdicts derive from human validations
 
+## Core Types (v0.1)
+### Claim
+
+Represents a user-submitted statement about the world.
+
+Fields:
+- `id` (string, immutable): globally unique identifier
+- `domain` (string): domain policy namespace (e.g., organization_filings, memorials)
+- `text` (string): human-readable claim statement
+- `created_at` (timestamp): when the claim was created
+- `created_by` (string): submitter identifier (opaque in v0.1)
