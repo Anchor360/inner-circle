@@ -173,6 +173,7 @@ It is descriptive only and does not introduce additional guarantees.
      - `failed → queued`
    - Workers MUST tolerate reprocessing under at-least-once semantics.
 
+
 RPC:
 - `CreateClaim(CreateClaimRequest) -> CreateClaimResponse`
 
