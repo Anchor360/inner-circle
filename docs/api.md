@@ -140,6 +140,38 @@ On failure:
 - Output writes MUST be deduplicated (e.g., stable TruthBit identifiers).
 - If a lease expires mid-run, the system MAY re-queue the claim; workers MUST tolerate safe reprocessing.
 
+---
+### End-to-End Execution Example (Non-normative)
+
+This example illustrates a typical asynchronous lifecycle for a Claim.
+It is descriptive only and does not introduce additional guarantees.
+
+1. **CreateClaim**
+   - A client submits a claim via `CreateClaim`.
+   - The system persists the claim with:
+     - `decomposition_status = pending`
+
+2. **EnqueueDecomposition**
+   - An internal orchestrator calls `EnqueueDecomposition`.
+   - The claim transitions:
+     - `pending → queued`
+   - The claim is now eligible for background processing.
+
+3. **DecomposeClaim (worker execution)**
+   - A background worker acquires a lease on the claim.
+   - The worker transitions:
+     - `queued → in_progress`
+   - The worker decomposes the claim into TruthBits.
+   - TruthBits are persisted and linked to the claim.
+   - On success, the claim transitions:
+     - `in_progress → decomposed`
+
+4. **Failure and retry (optional path)**
+   - If decomposition fails, the worker transitions:
+     - `in_progress → failed`
+   - A subsequent call to `EnqueueDecomposition` MAY re-queue the claim:
+     - `failed → queued`
+   - Workers MUST tolerate reprocessing under at-least-once semantics.
 
 RPC:
 - `CreateClaim(CreateClaimRequest) -> CreateClaimResponse`
