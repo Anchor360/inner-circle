@@ -48,6 +48,16 @@ A computed state for a Claim or Truth Bit derived from validations over time.
 States: unverified, supported, contested, refuted, stale
 
 ## Flow (v0.1)
+``` mermaid
+flowchart LR
+    A[Claim Ingested] --> B[Decompose into Truth Bits]
+    B --> C[Assign Truth Bits for Validation]
+    C --> D[Collect Evidence & Extract Values]
+    D --> E[Compute Verdicts]
+    E --> F[Persist History (Append-Only)]
+    F --> G[Dispute / Re-Validation]
+    G --> E
+```
 1. ingest claim
 2. decompose -> truth bits
 3. assign bits to validators
