@@ -62,6 +62,48 @@ Non-guarantees (explicit):
 Each operation is defined as a typed method (RPC-style) with an equivalent REST mapping.
 
 ### CreateClaim
+### DecomposeClaim (worker operation)
+
+Purpose: Decompose a Claim into normalized TruthBits as an asynchronous background step.
+This operation is intended for trusted internal workers (not end users).
+
+Idempotency: MUST be idempotent. Re-running DecomposeClaim for the same `claim_id`
+MUST NOT create duplicate TruthBits or contradictory linkages.
+
+#### Request
+- `claim_id` (string, required)
+- `lease_token` (string, required)
+- `attempt` (int, optional)
+
+#### Preconditions
+- Claim exists.
+- Claim is in `queued` OR worker holds a valid lease for the claim.
+- Worker MUST transition `decomposition_status` to `in_progress` atomically
+  (compare-and-set) as part of lease acquisition.
+
+#### Execution
+1. Load Claim payload.
+2. Decompose Claim into candidate TruthBits.
+3. Persist TruthBits and their association to `claim_id`.
+4. Transition `decomposition_status` to `decomposed` ONLY after outputs are persisted.
+
+On failure:
+- Record failure reason.
+- Transition `decomposition_status` to `failed`.
+- Retrying is performed by re-enqueueing per policy (outside this operation).
+
+#### Response
+- `claim_id` (string, required)
+- `decomposition_status` (enum, required) — `decomposed` OR `failed`
+- `truthbit_ids` (array[string], optional) — present on success
+- `failed_reason` (string, optional) — present on failure
+- `completed_at` (timestamp, required)
+
+#### Notes
+- Workers operate under at-least-once semantics; duplicate execution is expected.
+- Output writes MUST be deduplicated (e.g., stable TruthBit identifiers).
+- If a lease expires mid-run, the system MAY re-queue the claim; workers MUST tolerate safe reprocessing.
+
 
 RPC:
 - `CreateClaim(CreateClaimRequest) -> CreateClaimResponse`
