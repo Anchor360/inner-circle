@@ -51,3 +51,14 @@ Fields:
 - `notes` (string): optional validator notes or rationale
 - `created_at` (timestamp): when the validation was submitted
 - `created_by` (string): validator identifier (opaque in v0.1)
+### Verdict
+
+Represents the computed state of a Claim or TruthBit based on accumulated validations.
+
+Fields:
+- `id` (string, immutable): globally unique identifier
+- `subject_type` (string): target type (claim | truthbit)
+- `subject_id` (string): identifier of the Claim or TruthBit
+- `status` (string): computed state (unverified, supported, contested, refuted, stale)
+- `rationale` (string): explanation of how the verdict was derived
+- `computed_at` (timestamp): when the verdict was computed
