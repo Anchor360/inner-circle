@@ -32,15 +32,30 @@ Transitions MUST be enforced atomically and MUST be idempotent.
 
 **Terminal states:** `decomposed`, `failed`  
 **Non-terminal states:** `pending`, `queued`, `in_progress`
-Guarantees:
-- All client-facing operations are fast and non-blocking
-- State transitions are durable and auditable
-- Reprocessing is safe due to idempotency and append-only writes
 
-Non-guarantees (v0.1):
-- Ordering across domains
-- Real-time completion
-- Exactly-once background execution
+Guarantees (v0.1):
+- **Durability:** Once an operation returns success, its primary record write
+  is durable (Claim, Evidence, Validation, Verdict).
+- **Atomic state transitions:** `Claim.decomposition_status` transitions are
+  enforced atomically using compare-and-set semantics.
+- **Idempotency:** Retried client calls and retried workers MUST NOT create
+  duplicate logical outcomes (e.g., duplicate TruthBits).
+- **At-least-once processing:** Background workers may execute more than once;
+  the system remains correct under replays.
+- **Non-blocking API:** Client-facing operations return quickly and do not
+  block on long-running decomposition or validation.
+- **Auditability:** Every state transition and emitted output is attributable
+  to an actor or process and is timestamped.
+
+Non-guarantees (explicit):
+- **No exactly-once execution:** The system does not guarantee exactly-once
+  worker execution; correctness relies on idempotency.
+- **No global ordering:** The system does not guarantee ordering across
+  independent claims or across different operations.
+- **No synchronous finality:** A successful `CreateClaim` does not imply
+  decomposition, validation, or verdict completion.
+- **No single source of truth:** MIC stores verifiable references and structured
+  outputs; it does not replace upstream authorities.
 
 ## Operations (v0.1)
 
