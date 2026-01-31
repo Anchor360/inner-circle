@@ -29,3 +29,13 @@ Fields:
 - `expected_type` (string): expected value type (e.g., string, date, number)
 - `policy` (string): domain-specific verification ruleset identifier
 - `created_at` (timestamp): when the truth bit was created
+### Evidence
+
+Represents a piece of supporting or refuting material with provenance.
+
+Fields:
+- `id` (string, immutable): globally unique identifier
+- `type` (string): evidence type (primary_artifact, secondary_artifact, validator_capture)
+- `uri` (string): location or reference to the evidence
+- `captured_at` (timestamp): when the evidence was captured or observed
+- `metadata` (map<string, string>): auxiliary provenance metadata
