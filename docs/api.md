@@ -62,3 +62,24 @@ Fields:
 - `status` (string): computed state (unverified, supported, contested, refuted, stale)
 - `rationale` (string): explanation of how the verdict was derived
 - `computed_at` (timestamp): when the verdict was computed
+## Operations (v0.1)
+
+Each operation is defined as a typed method (RPC-style) with an equivalent REST mapping.
+
+### CreateClaim
+
+RPC:
+- `CreateClaim(CreateClaimRequest) -> CreateClaimResponse`
+
+REST mapping:
+- `POST /v0.1/claims`
+
+Request fields:
+- `idempotency_key` (string, required)
+- `domain` (string, required)
+- `text` (string, required)
+- `created_by` (string, optional)
+
+Response fields:
+- `claim_id` (string, required)
+- `created_at` (timestamp, required)
