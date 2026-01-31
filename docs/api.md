@@ -18,3 +18,14 @@ Fields:
 - `text` (string): human-readable claim statement
 - `created_at` (timestamp): when the claim was created
 - `created_by` (string): submitter identifier (opaque in v0.1)
+### TruthBit
+
+Represents a minimal, independently verifiable unit derived from a Claim.
+
+Fields:
+- `id` (string, immutable): globally unique identifier
+- `claim_id` (string): identifier of the parent Claim
+- `key` (string): semantic key describing what is being verified (e.g., filing_date, legal_name)
+- `expected_type` (string): expected value type (e.g., string, date, number)
+- `policy` (string): domain-specific verification ruleset identifier
+- `created_at` (timestamp): when the truth bit was created
