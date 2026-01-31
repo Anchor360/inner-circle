@@ -62,6 +62,42 @@ Non-guarantees (explicit):
 Each operation is defined as a typed method (RPC-style) with an equivalent REST mapping.
 
 ### CreateClaim
+
+### EnqueueDecomposition (orchestrator operation)
+
+Purpose: Schedule a Claim for asynchronous decomposition by transitioning
+`Claim.decomposition_status` to `queued`.
+
+This operation is intended for internal orchestrators (not end users).
+
+Idempotency: MUST be idempotent. Calling EnqueueDecomposition multiple times
+for the same `claim_id` MUST NOT create duplicate scheduled work.
+
+#### Request
+- `claim_id` (string, required)
+- `reason` (string, optional) — e.g., `initial`, `retry`, `lease_timeout`
+
+#### Preconditions
+- Claim exists.
+- Claim is not in terminal success (`decomposed`).
+- If Claim is `in_progress`, EnqueueDecomposition SHOULD be a no-op to avoid
+  duplicate concurrent work.
+
+#### State transition
+- `pending` -> `queued`
+- `failed` -> `queued` (retry path)
+- `queued` -> `queued` (idempotent no-op)
+
+#### Response
+- `claim_id` (string, required)
+- `decomposition_status` (enum, required) — `queued` OR current unchanged state
+- `enqueued_at` (timestamp, required)
+
+#### Notes
+- EnqueueDecomposition defines intent to process; it does not guarantee
+  immediate execution.
+- Actual execution is performed by DecomposeClaim workers under at-least-once semantics.
+
 ### DecomposeClaim (worker operation)
 
 Purpose: Decompose a Claim into normalized TruthBits as an asynchronous background step.
