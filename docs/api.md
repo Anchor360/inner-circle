@@ -19,7 +19,26 @@ Fields:
 - `created_at` (timestamp): when the claim was created
 - `created_by` (string): submitter identifier (opaque in v0.1)
 - `decomposition_status` (string): decomposition state (pending, in_progress, complete, failed)
+#### Decomposition lifecycle (v0.1)
 
+The `decomposition_status` field represents the readiness of a Claim for validation.
+
+Allowed states:
+- `pending`: claim accepted, decomposition not yet started
+- `in_progress`: truth-bit extraction underway
+- `complete`: truth bits finalized and available for validation
+- `failed`: decomposition failed and requires retry or manual intervention
+
+Allowed transitions:
+- `pending` → `in_progress`
+- `in_progress` → `complete`
+- `in_progress` → `failed`
+- `failed` → `in_progress` (retry)
+
+Notes:
+- Transitions are append-only and recorded as events
+- Clients must treat this field as **eventually consistent**
+- Verdict computation MUST NOT occur until status = `complete`
 ### TruthBit
 
 Represents a minimal, independently verifiable unit derived from a Claim.
