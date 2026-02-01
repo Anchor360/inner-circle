@@ -14,6 +14,7 @@ Execution flow:
 5. Status transitions to `decomposed`
 6. Validation becomes available
 7. Verdicts are computed asynchronously
+
 ### Claim.decomposition_status — State Transition Table (Normative)
 
 This table defines the authoritative state machine for asynchronous claim decomposition.
@@ -189,6 +190,7 @@ Request fields:
 Response fields:
 - `claim_id` (string, required)
 - `created_at` (timestamp, required)
+
 ## Validation Execution Model (v0.2)
 Validation evaluates derived TruthBits by attaching evidence and judgment
 without blocking upstream claim processing.
@@ -245,3 +247,49 @@ Non-guarantees:
 - No guarantee of validator agreement.
 - No guarantee of validation finality.
 - No guarantee that validations occur within a bounded time window.
+
+## Verdict Execution Model (v0.2)
+
+A Verdict is an asynchronous aggregation of one or more Validations.
+Verdicts summarize the current state of evidence without erasing disagreement.
+
+Verdicts are recomputed over time as new Validations arrive. Historical inputs
+(Validations and Evidence) remain immutable and auditable.
+
+### Execution flow
+
+1. One or more Validations are submitted for a TruthBit (or related TruthBits).
+2. A background aggregator evaluates the set of available Validations.
+3. The system persists a Verdict snapshot that references the contributing Validation IDs.
+4. Additional Validations MAY trigger recomputation and a newer Verdict snapshot.
+
+### Verdict status lifecycle
+
+Verdicts progress through a simple snapshot lifecycle:
+
+- `provisional` — computed with limited or low-coverage validations
+- `disputed` — materially conflicting validations exist
+- `supported` — validations converge with adequate coverage
+
+Terminal states:
+- `provisional`
+- `disputed`
+- `supported`
+
+### Verdict computation principles (normative)
+
+- Verdicts MUST be derivable from stored inputs (Validations + Evidence).
+- Verdicts MUST reference the Validation IDs used to compute them.
+- A newer Verdict MUST NOT delete or mutate prior Verdicts; it supersedes them by reference.
+- Disagreement MUST be representable (do not force convergence).
+
+### Guarantees (v0.2)
+
+- Verdict snapshots are durable once acknowledged.
+- Verdicts are reproducible from referenced inputs.
+- The system preserves minority/conflicting signals via `disputed` status.
+
+Non-guarantees:
+- No guarantee of finality; verdicts may change as new evidence arrives.
+- No guarantee of global ordering across independent TruthBits.
+- No guarantee of uniform trust across validators; consumer policy may differ.
