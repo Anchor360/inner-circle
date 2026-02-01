@@ -189,3 +189,59 @@ Request fields:
 Response fields:
 - `claim_id` (string, required)
 - `created_at` (timestamp, required)
+## Validation Execution Model (v0.2)
+Validation evaluates derived TruthBits by attaching evidence and judgment
+without blocking upstream claim processing.
+
+Validation is asynchronous, idempotent, and may occur multiple times
+over the lifetime of a TruthBit.
+
+### Execution flow
+
+1. TruthBits become available after claim decomposition.
+2. A validation is initiated by a validator (human or automated).
+3. Evidence is attached to support or challenge a TruthBit.
+4. Validation results are persisted independently.
+5. Additional validations MAY occur over time.
+
+### Validation status lifecycle
+
+Validation progresses through a simple, append-only lifecycle:
+
+- `pending` — validation created, evidence not yet submitted
+- `submitted` — evidence and judgment recorded
+- `superseded` — replaced by a newer validation terminal,historical)
+- `invalidated` — withdrawn or invalid due to error
+
+Terminal states:
+- `submitted`
+- `invalidated`
+- `invalidated`
+
+### Validation.status — State Transition Table (Normative)
+
+This table defines the authoritative state machine for Validation lifecycle.
+Transitions MUST be enforced atomically and MUST be idempotent.
+
+| From | Event | To | Actor | Invariant |
+|------|-------|----|-------|-----------|
+| — | CreateValidation | pending | API | Validation record persisted atomically |
+| pending | SubmitValidation | submitted | Validator | Evidence + judgment recorded durably |
+| pending | InvalidateValidation | invalidated | Validator/System | Invalidation reason recorded |
+| submitted | SupersedeValidation | superseded | System | Superseded points to newer validation |
+| superseded | SubmitValidation | superseded | System | No-op; superseded is terminal |
+| invalidated | SubmitValidation | invalidated | System | No-op; invalidated cannot be submitted |
+
+**Terminal states:** `submitted`, `superseded`, `invalidated`  
+**Non-terminal states:** `pending`
+
+### Guarantees (v0.2)
+
+- Validation creation and submission are durable once acknowledged.
+- Multiple validations MAY exist for the same TruthBit.
+- Validations do not block verdict computation or future validations.
+
+Non-guarantees:
+- No guarantee of validator agreement.
+- No guarantee of validation finality.
+- No guarantee that validations occur within a bounded time window.
