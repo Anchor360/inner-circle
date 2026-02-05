@@ -293,3 +293,54 @@ Non-guarantees:
 - No guarantee of finality; verdicts may change as new evidence arrives.
 - No guarantee of global ordering across independent TruthBits.
 - No guarantee of uniform trust across validators; consumer policy may differ.
+
+## Operations (v0.2 draft)
+
+### GetVerdict (read)
+
+Returns the most recent Verdict snapshot for a given Claim.
+
+This operation is read-only and MUST NOT trigger recomputation.
+
+**Inputs**
+- `claim_id` (string, required)
+- `include_history` (boolean, optional; default: false)
+
+**Behavior**
+- Resolves the latest Verdict by `created_at`.
+- Returns verdict status, confidence, and referenced Validation IDs.
+- If `include_history=true`, returns prior Verdict snapshots in descending order.
+
+**Outputs**
+- `verdict_id` (string)
+- `claim_id` (string)
+- `status` (enum: verified | disputed | indeterminate)
+- `confidence` (float, 0.0–1.0)
+- `validation_ids` (array of strings)
+- `created_at` (timestamp)
+
+---
+
+### ComputeVerdict (aggregator)
+
+Computes a new Verdict for a Claim by aggregating completed Validations.
+
+This operation MAY be invoked multiple times over a Claim’s lifecycle.
+
+**Inputs**
+- `claim_id` (string, required)
+- `policy_id` (string, optional; defaults to system policy)
+
+**Behavior**
+- Reads all completed Validations associated with the Claim.
+- Applies Verdict computation rules defined in the Verdict Execution Model (v0.2).
+- Generates a new immutable Verdict snapshot.
+- MUST NOT delete or mutate prior Verdicts.
+
+**Outputs**
+- `verdict_id` (string)
+- `claim_id` (string)
+- `status` (enum: verified | disputed | indeterminate)
+- `confidence` (float, 0.0–1.0)
+- `validation_ids` (array of strings)
+- `created_at` (timestamp)
