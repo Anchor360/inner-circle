@@ -14,8 +14,16 @@ from fastapi.exceptions import RequestValidationError
 import hashlib
 from fastapi import Header, Depends
 from typing import Optional
+import time
+import logging
 
 app = FastAPI(title="MIC POC", version="0.2")
+# ---------------------------
+# Structured Logging (A3)
+# ---------------------------
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("mic")
 
 # ---------------------------
 # API Key Auth (A2 strict)
@@ -95,6 +103,29 @@ async def api_key_auth(request: Request, call_next):
         request.state.actor_type, request.state.actor_id = actor
 
     return await call_next(request)
+
+@app.middleware("http")
+async def request_logger(request: Request, call_next):
+    start = time.time()
+
+    response = await call_next(request)
+
+    duration_ms = round((time.time() - start) * 1000, 2)
+
+    log_record = {
+        "ts": datetime.now(timezone.utc).isoformat(),
+        "trace_id": getattr(request.state, "trace_id", None),
+        "method": request.method,
+        "path": request.url.path,
+        "status": response.status_code,
+        "latency_ms": duration_ms,
+        "actor_type": getattr(request.state, "actor_type", None),
+        "actor_id": getattr(request.state, "actor_id", None),
+    }
+
+    logger.info(json.dumps(log_record))
+
+    return response
 
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):
