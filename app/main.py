@@ -16,6 +16,7 @@ from fastapi import Header, Depends
 from typing import Optional
 import time
 import logging
+from app.infra.redis_client import get_redis_client
 
 app = FastAPI(title="MIC POC", version="0.2")
 # ---------------------------
@@ -101,6 +102,80 @@ async def api_key_auth(request: Request, call_next):
             )
 
         request.state.actor_type, request.state.actor_id = actor
+
+    return await call_next(request)
+
+@app.middleware("http")
+async def rate_limit_post_per_actor(request: Request, call_next):
+    # Only enforce on write operations
+    if request.method.upper() == "POST" and request.url.path not in EXEMPT_PATHS:
+        actor_id = getattr(request.state, "actor_id", None)
+
+        # If for some reason actor_id isn't set, we fail-open.
+        if not actor_id:
+            return await call_next(request)
+
+        limit = int(os.getenv("RATE_LIMIT_POSTS_PER_MINUTE", "60"))
+
+        # Redis client (fail-open if unavailable)
+        r = get_redis_client()
+        if r is None:
+            # log a warning with context, but allow request
+            logger.warning(
+                json.dumps(
+                    {
+                        "ts": datetime.now(timezone.utc).isoformat(),
+                        "trace_id": getattr(request.state, "trace_id", None),
+                        "event": "rate_limit_unavailable",
+                        "method": request.method,
+                        "path": request.url.path,
+                        "actor_id": actor_id,
+                    }
+                )
+            )
+            return await call_next(request)
+
+        # Fixed 60-second window bucket (per-minute)
+        now = int(time.time())
+        bucket = now // 60
+        key = f"rl:post:{actor_id}:{bucket}"
+
+        try:
+            # Increment and set expiry
+            count = r.incr(key)
+            if count == 1:
+                r.expire(key, 60)
+
+            if count > limit:
+                return JSONResponse(
+                    status_code=429,
+                    content={
+                        "type": "about:blank",
+                        "title": "Request Error",
+                        "status": 429,
+                        "detail": "Rate limit exceeded",
+                        "instance": str(request.url.path),
+                        "trace_id": getattr(request.state, "trace_id", None),
+                    },
+                    headers={"Retry-After": "60"},
+                )
+
+        except Exception:
+            # Fail-open on Redis errors (but warn)
+            logger.warning(
+                json.dumps(
+                    {
+                        "ts": datetime.now(timezone.utc).isoformat(),
+                        "trace_id": getattr(request.state, "trace_id", None),
+                        "event": "rate_limit_error",
+                        "method": request.method,
+                        "path": request.url.path,
+                        "actor_id": actor_id,
+                    }
+                )
+            )
+
+        return await call_next(request)
 
     return await call_next(request)
 
@@ -270,19 +345,15 @@ def require_idempotency(
 
     return idempotency_key
 
-def get_actor(
-    x_actor_type: str | None = Header(None, alias="X-Actor-Type"),
-    x_actor_id: str | None = Header(None, alias="X-Actor-Id"),
-):
-    # Defaults preserve current behavior
-    actor_type = (x_actor_type or "system").strip()
-    actor_id = (x_actor_id or "api").strip()
+def get_actor(request: Request):
+    # Industry standard: actor identity must come from auth (server-derived),
+    # not from caller-supplied headers.
+    actor_type = getattr(request.state, "actor_type", None)
+    actor_id = getattr(request.state, "actor_id", None)
 
-    # Minimal hygiene (not “security”, just preventing garbage keys)
-    if len(actor_type) < 1 or len(actor_type) > 64:
-        raise HTTPException(status_code=400, detail="X-Actor-Type must be 1..64 chars")
-    if len(actor_id) < 1 or len(actor_id) > 128:
-        raise HTTPException(status_code=400, detail="X-Actor-Id must be 1..128 chars")
+    if not actor_type or not actor_id:
+        # If we ever hit this on a POST, it means auth middleware didn't set identity.
+        raise HTTPException(status_code=401, detail="Unauthorized")
 
     return actor_type, actor_id
 
@@ -369,71 +440,144 @@ def create_claim(
     idempotency_key: str = Depends(require_idempotency),
     actor: tuple[str, str] = Depends(get_actor),
 ):
+    actor_type, actor_id = actor
 
     claim_id = str(uuid4())
     created_at = datetime.now(tz=timezone.utc)
+    event_id = str(uuid.uuid4())
 
-    actor_type, actor_id = actor
-    
-    request_payload = {
-        "content": claim.content
-    }
-
+    request_payload = {"content": claim.content}
     request_hash = compute_request_hash(request_payload)
-
-    existing = get_idempotency_record(actor_type, actor_id, idempotency_key)
-
-    if existing:
-        existing_hash, existing_event_id, existing_aggregate_type, existing_aggregate_id, existing_created_at = existing
-
-        if existing_hash != request_hash:
-            raise HTTPException(
-                status_code=400,
-                detail="Idempotency-Key reuse with different payload",
-            )
-
-        return ClaimOut(
-            claim_id=existing_aggregate_id,
-            created_at=existing_created_at,
-        )
 
     conn = get_conn()
     cur = conn.cursor()
-    cur.execute(
-        """
-        INSERT INTO claims (claim_id, content, created_at)
-        VALUES (%s, %s, %s)
-        """,
-        (claim_id, claim.content, created_at),
-    )
-    conn.commit()
-    cur.close()
-    conn.close()
 
-    event_id = emit_event(
-        event_type="claim.created",
-        aggregate_type="claim",
-        aggregate_id=claim_id,
-        actor_type=actor_type,
-        actor_id=actor_id,
-        payload={
-            "schema_version": 1,
-            "content": claim.content,
-            "created_at": created_at.isoformat(),
-        },
-    )
+    try:
+        # 1) Claim idempotency first (DB unique constraint acts as lock)
+        cur.execute(
+            """
+            INSERT INTO idempotency_keys (
+                actor_type,
+                actor_id,
+                idempotency_key,
+                request_hash,
+                response_body,
+                status_code,
+                created_at,
+                event_id,
+                aggregate_type,
+                aggregate_id,
+                response_created_at
+            )
+            VALUES (%s, %s, %s, %s, NULL, NULL, now(), %s, %s, %s, NULL)
+            ON CONFLICT (actor_type, actor_id, idempotency_key) DO NOTHING
+            """,
+            (actor_type, actor_id, idempotency_key, request_hash, event_id, "claim", claim_id),
+        )
 
-    store_idempotency_record(
-        actor_type=actor_type,
-        actor_id=actor_id,
-        idempotency_key=idempotency_key,
-        request_hash=request_hash,
-        event_id=event_id,
-        aggregate_type="claim",
-        aggregate_id=claim_id,
-        response_created_at=created_at,
-    )
-    return ClaimOut(claim_id=claim_id, created_at=created_at)
+        if cur.rowcount == 0:
+            # Someone else already owns this key: replay their stored response (standard behavior)
+            cur.execute(
+                """
+                SELECT request_hash, status_code, response_body, aggregate_id, response_created_at
+                FROM idempotency_keys
+                WHERE actor_type=%s AND actor_id=%s AND idempotency_key=%s
+                """,
+                (actor_type, actor_id, idempotency_key),
+            )
+            row = cur.fetchone()
+            if not row:
+                raise HTTPException(status_code=500, detail="Idempotency record missing after conflict")
+
+            existing_hash, status_code, response_body, existing_aggregate_id, existing_created_at = row
+
+            if existing_hash != request_hash:
+                # Standard: conflict on same key with different payload
+                raise HTTPException(status_code=409, detail="Idempotency-Key reuse with different payload")
+
+            # If winner hasn't finished yet, client should retry
+            if status_code is None or response_body is None:
+                raise HTTPException(status_code=409, detail="Idempotency request in progress; retry")
+
+            return JSONResponse(status_code=int(status_code), content=response_body)
+
+        # 2) We won: create claim row
+        cur.execute(
+            """
+            INSERT INTO claims (claim_id, content, created_at)
+            VALUES (%s, %s, %s)
+            """,
+            (claim_id, claim.content, created_at),
+        )
+
+        # 3) We won: create event row (use same event_id stored in idempotency row)
+        cur.execute(
+            """
+            INSERT INTO events (
+                event_id,
+                event_type,
+                aggregate_type,
+                aggregate_id,
+                actor_type,
+                actor_id,
+                correlation_id,
+                payload
+            )
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s::jsonb)
+            """,
+            (
+                event_id,
+                "claim.created",
+                "claim",
+                claim_id,
+                actor_type,
+                actor_id,
+                None,
+                json.dumps(
+                    {
+                        "schema_version": 1,
+                        "content": claim.content,
+                        "created_at": created_at.isoformat(),
+                    }
+                ),
+            ),
+        )
+
+        # 4) Standard: store exact response for replay
+        response_body = {
+            "claim_id": claim_id,
+            "created_at": created_at.isoformat().replace("+00:00", "Z"),
+        }
+        status_code = 200
+
+        cur.execute(
+            """
+            UPDATE idempotency_keys
+            SET
+                response_body = %s::jsonb,
+                status_code = %s,
+                response_created_at = %s
+            WHERE actor_type=%s AND actor_id=%s AND idempotency_key=%s
+            """,
+            (
+                json.dumps(response_body),
+                status_code,
+                created_at,
+                actor_type,
+                actor_id,
+                idempotency_key,
+            ),
+        )
+
+        conn.commit()
+        return ClaimOut(claim_id=claim_id, created_at=created_at)
+
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        cur.close()
+        conn.close()
 
 # ---------------------------
 # Validations
