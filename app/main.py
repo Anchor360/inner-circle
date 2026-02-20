@@ -1120,6 +1120,89 @@ async def verify_ofac(request: OFACVerifyRequest):
         "source": "OFAC SDN via trade.gov"
     }
 
+@app.post("/verify/bis")
+async def verify_bis(request: OFACVerifyRequest):
+    entity_name = request.entity_name.strip()
+    if not entity_name:
+        raise HTTPException(status_code=400, detail="entity_name is required")
+
+    bis_match = False
+    bis_detail = ""
+    bis_hits = []
+
+    try:
+        bis_conn = get_conn()
+        bis_cur = bis_conn.cursor()
+        bis_cur.execute("""
+            SELECT name, city, country, effective_date, expiration_date, action
+            FROM bis_dpl
+            WHERE UPPER(name) LIKE %s
+            LIMIT 5
+        """, (f"%{entity_name.upper()}%",))
+        results = bis_cur.fetchall()
+        bis_cur.close()
+        bis_conn.close()
+
+        if results:
+            bis_match = True
+            hit = results[0]
+            bis_detail = f"MATCH FOUND: {hit[0]} | Country: {hit[2]} | Effective: {hit[3]} | Expires: {hit[4]}"
+            bis_hits = [
+                {
+                    "name": r[0],
+                    "city": r[1],
+                    "country": r[2],
+                    "effective_date": str(r[3]) if r[3] else None,
+                    "expiration_date": str(r[4]) if r[4] else None,
+                    "action": r[5],
+                }
+                for r in results
+            ]
+        else:
+            bis_detail = "No match found on BIS Denied Persons List"
+
+    except Exception as e:
+        bis_detail = f"BIS lookup error: {str(e)}"
+
+    conn = get_conn()
+    cur = conn.cursor()
+    try:
+        claim_id = str(uuid.uuid4())
+        event_id = str(uuid.uuid4())
+        now = datetime.now(timezone.utc)
+
+        cur.execute("""
+            INSERT INTO claims (claim_id, content, created_at)
+            VALUES (%s, %s, %s)
+        """, (claim_id, entity_name, now))
+
+        cur.execute("""
+            INSERT INTO events (event_id, event_type, aggregate_type, aggregate_id, actor_type, actor_id, payload, created_at)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        """, (event_id, "bis_dpl_verification", "claim", claim_id, "system", "system", json.dumps({
+            "entity": entity_name,
+            "match": bis_match,
+            "detail": bis_detail
+        }), now))
+
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+    finally:
+        cur.close()
+        conn.close()
+
+    return {
+        "entity": entity_name,
+        "bis_match": bis_match,
+        "detail": bis_detail,
+        "hits": bis_hits,
+        "claim_id": claim_id,
+        "verified_at": now.isoformat(),
+        "source": "BIS Denied Persons List via media.bis.gov"
+    }
+
 @app.get("/health")
 def health():
     try:
