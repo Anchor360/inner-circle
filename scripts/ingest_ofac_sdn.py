@@ -16,7 +16,7 @@ def get_conn():
         host=os.getenv("DB_HOST", "localhost"),
         port=os.getenv("DB_PORT", 5432),
         dbname=os.getenv("DB_NAME", "mic"),
-        user=os.getenv("DB_USER", "mic"),
+        user=os.getenv("DB_USER", "mic_app"),
         password=os.getenv("DB_PASSWORD")
     )
 
