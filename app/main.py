@@ -12,7 +12,6 @@ from fastapi.responses import JSONResponse
 import uuid
 from fastapi.exceptions import RequestValidationError
 import hashlib
-import httpx
 from fastapi import Header, Depends
 from typing import Optional
 import time
