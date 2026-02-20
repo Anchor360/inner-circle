@@ -12,6 +12,7 @@ from fastapi.responses import JSONResponse
 import uuid
 from fastapi.exceptions import RequestValidationError
 import hashlib
+import httpx
 from fastapi import Header, Depends
 from typing import Optional
 import time
@@ -1034,6 +1035,91 @@ def list_verdicts(claim_id: str):
 
     return {"claim_id": claim_id, "verdicts": verdicts}
 
+# ---------------------------
+# OFAC Sanctions Verification
+# ---------------------------
+
+class OFACVerifyRequest(BaseModel):
+    entity_name: str
+
+@app.post("/verify/ofac")
+async def verify_ofac(request: OFACVerifyRequest):
+    entity_name = request.entity_name.strip()
+    if not entity_name:
+        raise HTTPException(status_code=400, detail="entity_name is required")
+
+    # Step 1: Check OFAC sanctions list (local database)
+    ofac_match = False
+    ofac_detail = ""
+    try:
+        sdn_conn = get_conn()
+        sdn_cur = sdn_conn.cursor()
+        sdn_cur.execute("""
+            SELECT uid, last_name, first_name, entity_type, programs
+            FROM ofac_sdn
+            WHERE UPPER(last_name) LIKE %s
+            OR UPPER(first_name || ' ' || last_name) LIKE %s
+            OR UPPER(last_name || ' ' || first_name) LIKE %s
+            LIMIT 5
+        """, (
+            f"%{entity_name.upper()}%",
+            f"%{entity_name.upper()}%",
+            f"%{entity_name.upper()}%"
+        ))
+        results = sdn_cur.fetchall()
+        sdn_cur.close()
+        sdn_conn.close()
+
+        if results:
+            ofac_match = True
+            hit = results[0]
+            ofac_detail = f"MATCH FOUND: {hit[2]} {hit[1]} | Type: {hit[3]} | Programs: {', '.join(hit[4] or [])}"
+        else:
+            ofac_detail = "No match found on OFAC SDN list"
+    except Exception as e:
+        ofac_detail = f"OFAC lookup error: {str(e)}"
+
+    # Step 2: Write full audit trail to database
+    conn = get_conn()
+    cur = conn.cursor()
+    try:
+        claim_id = str(uuid.uuid4())
+        validation_id = str(uuid.uuid4())
+        verdict_id = str(uuid.uuid4())
+        event_id = str(uuid.uuid4())
+        now = datetime.now(timezone.utc)
+        content_hash = hashlib.sha256(entity_name.encode()).hexdigest()
+
+        cur.execute("""
+            INSERT INTO claims (claim_id, content, created_at)
+            VALUES (%s, %s, %s)
+        """, (claim_id, entity_name, now))
+
+        cur.execute("""
+            INSERT INTO events (event_id, event_type, aggregate_type, aggregate_id, actor_type, actor_id, payload, created_at)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        """, (event_id, "ofac_verification", "claim", claim_id, "system", "system", json.dumps({
+            "entity": entity_name,
+            "match": ofac_match,
+            "detail": ofac_detail
+        }), now))
+
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+    finally:
+        cur.close()
+        conn.close()
+
+    return {
+        "entity": entity_name,
+        "ofac_match": ofac_match,
+        "detail": ofac_detail,
+        "claim_id": claim_id,
+        "verified_at": now.isoformat(),
+        "source": "OFAC SDN via trade.gov"
+    }
 
 @app.get("/health")
 def health():
