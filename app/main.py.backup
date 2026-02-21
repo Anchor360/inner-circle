@@ -302,19 +302,6 @@ def emit_event(
     conn = get_conn()
     cur = conn.cursor()
 
-    previous_hash = get_latest_event_hash(cur)
-    event_hash = compute_event_hash(
-        event_id=event_id,
-        event_type=event_type,
-        aggregate_type=aggregate_type,
-        aggregate_id=aggregate_id,
-        actor_type=actor_type,
-        actor_id=actor_id,
-        payload=payload,
-        created_at=datetime.now(timezone.utc).isoformat(),
-        previous_hash=previous_hash,
-    )
-
     cur.execute(
         """
         INSERT INTO events (
@@ -325,11 +312,9 @@ def emit_event(
             actor_type,
             actor_id,
             correlation_id,
-            payload,
-            event_hash,
-            previous_hash
+            payload
         )
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s, %s)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s::jsonb)
         """,
         (
             event_id,
@@ -340,8 +325,6 @@ def emit_event(
             actor_id,
             correlation_id,
             json.dumps(payload),
-            event_hash,
-            previous_hash,
         ),
     )
 
