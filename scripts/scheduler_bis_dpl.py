@@ -43,18 +43,57 @@ def record_version(cur, content_hash, entry_count):
     """, (content_hash, entry_count))
     return cur.fetchone()[0]
 
-def log_event(cur, status, content_hash, entries_updated, message):
+def get_latest_event_hash(cur):
     cur.execute("""
-        INSERT INTO events (event_id, event_type, aggregate_type, aggregate_id, actor_type, actor_id, payload)
-        VALUES (gen_random_uuid(), 'bis_dpl_ingestion', 'system', 'bis_dpl', 'scheduler', 'bis_scheduler', %s)
-    """, (
-        __import__('json').dumps({
-            "status": status,
-            "content_hash": content_hash,
-            "entries_updated": entries_updated,
-            "message": message
-        }),
-    ))
+        SELECT event_hash FROM events
+        WHERE event_hash IS NOT NULL
+        ORDER BY created_at DESC, event_id DESC
+        LIMIT 1
+    """)
+    row = cur.fetchone()
+    return row[0] if row else None
+
+def compute_event_hash(event_id, event_type, aggregate_type, aggregate_id, actor_type, actor_id, payload, created_at, previous_hash):
+    import json, hashlib
+    canonical = json.dumps({
+        "event_id": event_id,
+        "event_type": event_type,
+        "aggregate_type": aggregate_type,
+        "aggregate_id": aggregate_id,
+        "actor_type": actor_type,
+        "actor_id": actor_id,
+        "payload": payload,
+        "created_at": created_at,
+        "previous_hash": previous_hash,
+    }, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(canonical).hexdigest()
+
+def log_event(cur, status, content_hash, entries_updated, message):
+    import uuid, json
+    event_id = str(uuid.uuid4())
+    now = datetime.now(timezone.utc).isoformat()
+    payload = {
+        "status": status,
+        "content_hash": content_hash,
+        "entries_updated": entries_updated,
+        "message": message
+    }
+    previous_hash = get_latest_event_hash(cur)
+    event_hash = compute_event_hash(
+        event_id=event_id,
+        event_type="bis_dpl_ingestion",
+        aggregate_type="system",
+        aggregate_id="bis_dpl",
+        actor_type="scheduler",
+        actor_id="bis_scheduler",
+        payload=payload,
+        created_at=now,
+        previous_hash=previous_hash,
+    )
+    cur.execute("""
+        INSERT INTO events (event_id, event_type, aggregate_type, aggregate_id, actor_type, actor_id, payload, event_hash, previous_hash)
+        VALUES (%s, 'bis_dpl_ingestion', 'system', 'bis_dpl', 'scheduler', 'bis_scheduler', %s, %s, %s)
+    """, (event_id, json.dumps(payload), event_hash, previous_hash))
 
 def parse_date(s):
     s = s.strip()
