@@ -35,6 +35,14 @@ def get_last_hash(cur):
     row = cur.fetchone()
     return row[0] if row else None
 
+def record_version(cur, content_hash, entry_count):
+    cur.execute("""
+        INSERT INTO ingestion_versions (source, content_hash, entry_count)
+        VALUES ('bis_dpl', %s, %s)
+        RETURNING version_id
+    """, (content_hash, entry_count))
+    return cur.fetchone()[0]
+
 def log_event(cur, status, content_hash, entries_updated, message):
     cur.execute("""
         INSERT INTO events (event_id, event_type, aggregate_type, aggregate_id, actor_type, actor_id, payload)
@@ -125,7 +133,8 @@ def run_once():
             if cur.rowcount > 0:
                 inserted += 1
 
-        log_event(cur, "updated", content_hash, inserted, f"Ingested {inserted} new entries from BIS DPL.")
+        version_id = record_version(cur, content_hash, inserted)
+        log_event(cur, "updated", content_hash, inserted, f"Ingested {inserted} new entries from BIS DPL. Version ID: {version_id}")
         conn.commit()
         cur.close()
         conn.close()
