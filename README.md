@@ -1,5 +1,5 @@
 # Inner-Circle (MIC) — Proof of Concept
-
+Before making any architectural change, read CORE_INFRA_RULES.md.
 Inner-Circle is a credibility-first verification infrastructure designed to answer not just *what* is true, but *how confidently* it is known, *where the evidence came from*, and *what remains unknown*.
 
 This Proof of Concept demonstrates a minimal, reproducible verification loop suitable for regulated and high-trust environments (finance, legal, policy, research).
