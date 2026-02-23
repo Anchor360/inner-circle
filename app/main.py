@@ -17,6 +17,7 @@ from typing import Optional
 import time
 import logging
 from app.infra.redis_client import get_redis_client
+from rapidfuzz import fuzz, process
 
 app = FastAPI(title="MIC POC", version="0.2")
 # ---------------------------
@@ -1105,31 +1106,50 @@ async def verify_ofac(request: OFACVerifyRequest):
             WHERE UPPER(last_name) LIKE %s
             OR UPPER(first_name || ' ' || last_name) LIKE %s
             OR UPPER(last_name || ' ' || first_name) LIKE %s
-            LIMIT 5
+            LIMIT 200
         """, (
-            f"%{entity_name.upper()}%",
-            f"%{entity_name.upper()}%",
-            f"%{entity_name.upper()}%"
+            f"%{entity_name.upper()[:4]}%",
+            f"%{entity_name.upper()[:4]}%",
+            f"%{entity_name.upper()[:4]}%"
         ))
-        results = sdn_cur.fetchall()
+        candidates = sdn_cur.fetchall()
         sdn_cur.close()
         sdn_conn.close()
 
-        if results:
-            ofac_match = True
-            match_type = "partial"
-            ofac_hits = []
-            for row in results:
+        FUZZY_THRESHOLD = 85
+        ofac_hits = []
+        for row in candidates:
+            full_name = f"{row[2] or ''} {row[1]}".strip()
+            score_full = fuzz.token_sort_ratio(entity_name.upper(), full_name.upper())
+            score_last = fuzz.token_sort_ratio(entity_name.upper(), (row[1] or '').upper())
+            best_score = max(score_full, score_last)
+            if best_score >= FUZZY_THRESHOLD:
                 codes = row[4] or []
+                if best_score == 100:
+                    mt = "exact"
+                elif best_score >= 95:
+                    mt = "partial"
+                else:
+                    mt = "fuzzy"
                 ofac_hits.append({
                     "uid": row[0],
-                    "name": f"{row[2] or ''} {row[1]}".strip(),
+                    "name": full_name,
                     "entity_type": row[3],
                     "program_codes": codes,
+                    "match_score": round(best_score / 100, 2),
+                    "match_type": mt,
                     "raw_match_data": row[5],
                 })
-            ofac_detail = f"MATCH FOUND: {len(results)} result(s) on OFAC SDN list"
+
+        ofac_hits.sort(key=lambda x: x["match_score"], reverse=True)
+        ofac_hits = ofac_hits[:10]
+
+        if ofac_hits:
+            ofac_match = True
+            match_type = ofac_hits[0]["match_type"]
+            ofac_detail = f"MATCH FOUND: {len(ofac_hits)} result(s) on OFAC SDN list"
         else:
+            ofac_match = False
             match_type = "none"
             ofac_hits = []
             ofac_detail = "No match found on OFAC SDN list"
