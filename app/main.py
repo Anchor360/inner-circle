@@ -1232,28 +1232,42 @@ async def verify_bis(request: OFACVerifyRequest):
             SELECT name, city, country, effective_date, expiration_date, action
             FROM bis_dpl
             WHERE UPPER(name) LIKE %s
-            LIMIT 5
-        """, (f"%{entity_name.upper()}%",))
-        results = bis_cur.fetchall()
+            LIMIT 200
+        """, (f"%{entity_name.upper()[:4]}%",))
+        candidates = bis_cur.fetchall()
         bis_cur.close()
         bis_conn.close()
 
-        if results:
+        FUZZY_THRESHOLD = 85
+        bis_hits = []
+        for row in candidates:
+            score = fuzz.token_sort_ratio(entity_name.upper(), (row[0] or '').upper())
+            if score >= FUZZY_THRESHOLD:
+                if score == 100:
+                    mt = "exact"
+                elif score >= 95:
+                    mt = "partial"
+                else:
+                    mt = "fuzzy"
+                bis_hits.append({
+                    "name": row[0],
+                    "city": row[1],
+                    "country": row[2],
+                    "effective_date": str(row[3]) if row[3] else None,
+                    "expiration_date": str(row[4]) if row[4] else None,
+                    "action": row[5],
+                    "match_score": round(score / 100, 2),
+                    "match_type": mt,
+                })
+
+        bis_hits.sort(key=lambda x: x["match_score"], reverse=True)
+        bis_hits = bis_hits[:10]
+
+        if bis_hits:
             bis_match = True
-            hit = results[0]
-            bis_detail = f"MATCH FOUND: {hit[0]} | Country: {hit[2]} | Effective: {hit[3]} | Expires: {hit[4]}"
-            bis_hits = [
-                {
-                    "name": r[0],
-                    "city": r[1],
-                    "country": r[2],
-                    "effective_date": str(r[3]) if r[3] else None,
-                    "expiration_date": str(r[4]) if r[4] else None,
-                    "action": r[5],
-                }
-                for r in results
-            ]
+            bis_detail = f"MATCH FOUND: {len(bis_hits)} result(s) on BIS Denied Persons List"
         else:
+            bis_match = False
             bis_detail = "No match found on BIS Denied Persons List"
 
     except Exception as e:
@@ -1351,35 +1365,53 @@ async def verify_ofac_consolidated(request: OFACVerifyRequest):
             WHERE UPPER(last_name) LIKE %s
             OR UPPER(first_name || ' ' || last_name) LIKE %s
             OR UPPER(last_name || ' ' || first_name) LIKE %s
-            LIMIT 5
+            LIMIT 200
         """, (
-            f"%{entity_name.upper()}%",
-            f"%{entity_name.upper()}%",
-            f"%{entity_name.upper()}%"
+            f"%{entity_name.upper()[:4]}%",
+            f"%{entity_name.upper()[:4]}%",
+            f"%{entity_name.upper()[:4]}%"
         ))
-        results = con_cur.fetchall()
+        candidates = con_cur.fetchall()
         con_cur.close()
         con_conn.close()
 
-        if results:
-            con_match = True
-            match_type = "partial" if entity_name.upper() not in results[0][1].upper() else "exact"
-            for row in results:
+        FUZZY_THRESHOLD = 85
+        con_hits = []
+        for row in candidates:
+            full_name = f"{row[2] or ''} {row[1]}".strip()
+            score_full = fuzz.token_sort_ratio(entity_name.upper(), full_name.upper())
+            score_last = fuzz.token_sort_ratio(entity_name.upper(), (row[1] or '').upper())
+            best_score = max(score_full, score_last)
+            if best_score >= FUZZY_THRESHOLD:
                 codes = row[4] or []
-                program_codes.extend(codes)
-                list_types.extend([PROGRAM_CODE_LABELS.get(c, c) for c in codes])
+                if best_score == 100:
+                    mt = "exact"
+                elif best_score >= 95:
+                    mt = "partial"
+                else:
+                    mt = "fuzzy"
                 con_hits.append({
                     "uid": row[0],
-                    "name": f"{row[2] or ''} {row[1]}".strip(),
+                    "name": full_name,
                     "entity_type": row[3],
                     "program_codes": codes,
                     "list_types": [PROGRAM_CODE_LABELS.get(c, c) for c in codes],
+                    "match_score": round(best_score / 100, 2),
+                    "match_type": mt,
                     "raw_match_data": row[5],
                 })
-            program_codes = list(set(program_codes))
-            list_types = list(set(list_types))
-            con_detail = f"MATCH FOUND: {len(results)} result(s) on OFAC Consolidated Sanctions List"
+
+        con_hits.sort(key=lambda x: x["match_score"], reverse=True)
+        con_hits = con_hits[:10]
+
+        if con_hits:
+            con_match = True
+            match_type = con_hits[0]["match_type"]
+            program_codes = list(set(c for h in con_hits for c in h["program_codes"]))
+            list_types = list(set(t for h in con_hits for t in h["list_types"]))
+            con_detail = f"MATCH FOUND: {len(con_hits)} result(s) on OFAC Consolidated Sanctions List"
         else:
+            con_match = False
             con_detail = "No match found on OFAC Consolidated Sanctions List"
 
     except Exception as e:
