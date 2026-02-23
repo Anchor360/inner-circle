@@ -1117,9 +1117,20 @@ async def verify_ofac(request: OFACVerifyRequest):
 
         if results:
             ofac_match = True
-            hit = results[0]
-            ofac_detail = f"MATCH FOUND: {hit[2]} {hit[1]} | Type: {hit[3]} | Programs: {', '.join(hit[4] or [])}"
+            match_type = "partial"
+            ofac_hits = []
+            for row in results:
+                codes = row[4] or []
+                ofac_hits.append({
+                    "uid": row[0],
+                    "name": f"{row[2] or ''} {row[1]}".strip(),
+                    "entity_type": row[3],
+                    "program_codes": codes,
+                })
+            ofac_detail = f"MATCH FOUND: {len(results)} result(s) on OFAC SDN list"
         else:
+            match_type = "none"
+            ofac_hits = []
             ofac_detail = "No match found on OFAC SDN list"
     except Exception as e:
         ofac_detail = f"OFAC lookup error: {str(e)}"
@@ -1173,10 +1184,14 @@ async def verify_ofac(request: OFACVerifyRequest):
     return {
         "entity": entity_name,
         "ofac_match": ofac_match,
+        "match_type": match_type,
         "detail": ofac_detail,
+        "hits": ofac_hits,
+        "sources_checked": ["OFAC SDN List (sanctionslistservice.ofac.treas.gov)"],
         "claim_id": claim_id,
         "verified_at": now.isoformat(),
-        "source": "OFAC SDN via trade.gov"
+        "source_url": "https://sanctionslistservice.ofac.treas.gov/api/publicationpreview/exports/sdn.xml",
+        "compliance_disclaimer": "This receipt documents the results of a query against government-published sanctions lists. Compliance determinations remain the responsibility of the querying organization.",
     }
 
 @app.post("/verify/bis")
@@ -1268,11 +1283,14 @@ async def verify_bis(request: OFACVerifyRequest):
     return {
         "entity": entity_name,
         "bis_match": bis_match,
+        "match_type": "partial" if bis_match else "none",
         "detail": bis_detail,
         "hits": bis_hits,
+        "sources_checked": ["BIS Denied Persons List (media.bis.gov)"],
         "claim_id": claim_id,
         "verified_at": now.isoformat(),
-        "source": "BIS Denied Persons List via media.bis.gov"
+        "source_url": "https://www.bis.doc.gov/dpl/dpl.txt",
+        "compliance_disclaimer": "This receipt documents the results of a query against government-published sanctions lists. Compliance determinations remain the responsibility of the querying organization.",
     }
 
 
