@@ -1100,7 +1100,7 @@ async def verify_ofac(request: OFACVerifyRequest):
         sdn_conn = get_conn()
         sdn_cur = sdn_conn.cursor()
         sdn_cur.execute("""
-            SELECT uid, last_name, first_name, entity_type, programs
+            SELECT uid, last_name, first_name, entity_type, programs, raw
             FROM ofac_sdn
             WHERE UPPER(last_name) LIKE %s
             OR UPPER(first_name || ' ' || last_name) LIKE %s
@@ -1126,6 +1126,7 @@ async def verify_ofac(request: OFACVerifyRequest):
                     "name": f"{row[2] or ''} {row[1]}".strip(),
                     "entity_type": row[3],
                     "program_codes": codes,
+                    "raw_match_data": row[5],
                 })
             ofac_detail = f"MATCH FOUND: {len(results)} result(s) on OFAC SDN list"
         else:
@@ -1325,7 +1326,7 @@ async def verify_ofac_consolidated(request: OFACVerifyRequest):
         con_conn = get_conn()
         con_cur = con_conn.cursor()
         con_cur.execute("""
-            SELECT uid, last_name, first_name, entity_type, programs
+            SELECT uid, last_name, first_name, entity_type, programs, raw
             FROM ofac_consolidated
             WHERE UPPER(last_name) LIKE %s
             OR UPPER(first_name || ' ' || last_name) LIKE %s
@@ -1353,6 +1354,7 @@ async def verify_ofac_consolidated(request: OFACVerifyRequest):
                     "entity_type": row[3],
                     "program_codes": codes,
                     "list_types": [PROGRAM_CODE_LABELS.get(c, c) for c in codes],
+                    "raw_match_data": row[5],
                 })
             program_codes = list(set(program_codes))
             list_types = list(set(list_types))

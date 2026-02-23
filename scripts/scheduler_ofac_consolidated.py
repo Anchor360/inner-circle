@@ -145,7 +145,32 @@ def run_once():
                     raw = EXCLUDED.raw,
                     ingested_at = EXCLUDED.ingested_at
             """, (uid, last_name, first_name, entity_type, programs,
-                  json.dumps({"uid": uid, "lastName": last_name, "firstName": first_name}),
+                  json.dumps({
+                "uid": uid,
+                "lastName": last_name,
+                "firstName": first_name,
+                "sdnType": entity_type,
+                "programs": programs,
+                "aliases": [a.text.strip() for a in entry.findall(".//{*}aka") if a.text],
+                "addresses": [
+                    {
+                        "address": el.findtext("{*}address1") or "",
+                        "city": el.findtext("{*}city") or "",
+                        "country": el.findtext("{*}country") or "",
+                    }
+                    for el in entry.findall(".//{*}address")
+                ],
+                "ids": [
+                    {
+                        "idType": el.findtext("{*}idType") or "",
+                        "idNumber": el.findtext("{*}idNumber") or "",
+                    }
+                    for el in entry.findall(".//{*}id")
+                ],
+                "nationalities": [n.text.strip() for n in entry.findall(".//{*}nationality") if n.text],
+                "dateOfBirth": entry.findtext(".//{*}dateOfBirth") or "",
+                "placeOfBirth": entry.findtext(".//{*}placeOfBirth") or "",
+            }),
                   datetime.now(timezone.utc)))
             inserted += 1
 
