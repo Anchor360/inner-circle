@@ -1275,6 +1275,133 @@ async def verify_bis(request: OFACVerifyRequest):
         "source": "BIS Denied Persons List via media.bis.gov"
     }
 
+
+PROGRAM_CODE_LABELS = {
+    "UKRAINE-EO13662": "SSI (Sectoral Sanctions Identifications)",
+    "RUSSIA-EO14024": "Russia-Related Sanctions (EO 14024)",
+    "NS-PLC": "Non-SDN Palestinian Legislative Council List",
+    "CMIC-EO13959": "Chinese Military-Industrial Complex Companies",
+    "VENEZUELA-EO13850": "Venezuela-Related Sanctions",
+    "CAATSA - RUSSIA": "CAATSA Russia Sanctions",
+    "SDGT": "Specially Designated Global Terrorist",
+    "BURMA-EO14014": "Burma-Related Sanctions",
+    "ILLICIT-DRUGS-EO14059": "Illicit Drugs Sanctions",
+    "561-Related": "Iran 561 List",
+    "IRAN-CON-ARMS-EO": "Iran Conventional Arms Sanctions",
+}
+
+@app.post("/verify/ofac-consolidated")
+async def verify_ofac_consolidated(request: OFACVerifyRequest):
+    entity_name = request.entity_name.strip()
+    if not entity_name:
+        raise HTTPException(status_code=400, detail="entity_name is required")
+
+    con_match = False
+    con_detail = ""
+    con_hits = []
+    program_codes = []
+    list_types = []
+    match_type = "none"
+
+    try:
+        con_conn = get_conn()
+        con_cur = con_conn.cursor()
+        con_cur.execute("""
+            SELECT uid, last_name, first_name, entity_type, programs
+            FROM ofac_consolidated
+            WHERE UPPER(last_name) LIKE %s
+            OR UPPER(first_name || ' ' || last_name) LIKE %s
+            OR UPPER(last_name || ' ' || first_name) LIKE %s
+            LIMIT 5
+        """, (
+            f"%{entity_name.upper()}%",
+            f"%{entity_name.upper()}%",
+            f"%{entity_name.upper()}%"
+        ))
+        results = con_cur.fetchall()
+        con_cur.close()
+        con_conn.close()
+
+        if results:
+            con_match = True
+            match_type = "partial" if entity_name.upper() not in results[0][1].upper() else "exact"
+            for row in results:
+                codes = row[4] or []
+                program_codes.extend(codes)
+                list_types.extend([PROGRAM_CODE_LABELS.get(c, c) for c in codes])
+                con_hits.append({
+                    "uid": row[0],
+                    "name": f"{row[2] or ''} {row[1]}".strip(),
+                    "entity_type": row[3],
+                    "program_codes": codes,
+                    "list_types": [PROGRAM_CODE_LABELS.get(c, c) for c in codes],
+                })
+            program_codes = list(set(program_codes))
+            list_types = list(set(list_types))
+            con_detail = f"MATCH FOUND: {len(results)} result(s) on OFAC Consolidated Sanctions List"
+        else:
+            con_detail = "No match found on OFAC Consolidated Sanctions List"
+
+    except Exception as e:
+        con_detail = f"Consolidated lookup error: {str(e)}"
+
+    conn = get_conn()
+    cur = conn.cursor()
+    try:
+        claim_id = str(uuid.uuid4())
+        event_id = str(uuid.uuid4())
+        now = datetime.now(timezone.utc)
+
+        cur.execute("""
+            INSERT INTO claims (claim_id, content, created_at)
+            VALUES (%s, %s, %s)
+        """, (claim_id, entity_name, now))
+
+        previous_hash = get_latest_event_hash(cur)
+        event_hash = compute_event_hash(
+            event_id=event_id,
+            event_type="ofac_consolidated_verification",
+            aggregate_type="claim",
+            aggregate_id=claim_id,
+            actor_type="system",
+            actor_id="system",
+            payload={"entity": entity_name, "match": con_match, "detail": con_detail},
+            created_at=now.isoformat(),
+            previous_hash=previous_hash,
+        )
+
+        cur.execute("""
+            INSERT INTO events (event_id, event_type, aggregate_type, aggregate_id, actor_type, actor_id, payload, created_at, event_hash, previous_hash)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (event_id, "ofac_consolidated_verification", "claim", claim_id, "system", "system", json.dumps({
+            "entity": entity_name,
+            "match": con_match,
+            "detail": con_detail
+        }), now, event_hash, previous_hash))
+        conn.commit()
+
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+    finally:
+        cur.close()
+        conn.close()
+
+    return {
+        "entity": entity_name,
+        "ofac_consolidated_match": con_match,
+        "match_type": match_type,
+        "program_codes": program_codes,
+        "list_types": list_types,
+        "detail": con_detail,
+        "hits": con_hits,
+        "sources_checked": ["OFAC Consolidated Sanctions List (sanctionslistservice.ofac.treas.gov)"],
+        "claim_id": claim_id,
+        "verified_at": now.isoformat(),
+        "source_url": "https://sanctionslistservice.ofac.treas.gov/api/publicationpreview/exports/consolidated.xml",
+        "compliance_disclaimer": "This receipt documents the results of a query against government-published sanctions lists. Compliance determinations remain the responsibility of the querying organization.",
+    }
+
 @app.get("/health")
 def health():
     try:
