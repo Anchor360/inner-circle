@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inner-Circle — Compliance Verification</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --white: #ffffff; --off-white: #f8f8f6; --border: #e8e8e4;
+      --text-primary: #111110; --text-secondary: #6b6b68; --text-tertiary: #9b9b97;
+      --accent: #1a1a1a; --accent-blue: #2563eb;
+      --match: #dc2626; --match-bg: #fef2f2; --match-border: #fecaca;
+      --clean: #16a34a; --clean-bg: #f0fdf4; --clean-border: #bbf7d0;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    }
+    html { font-size: 16px; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--off-white); color: var(--text-primary); min-height: 100vh; display: flex; flex-direction: column; }
+    nav { background: var(--white); border-bottom: 1px solid var(--border); padding: 0 40px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+    .nav-brand { display: flex; align-items: center; gap: 10px; }
+    .nav-logo { width: 28px; height: 28px; background: var(--accent); border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+    .nav-logo svg { width: 14px; height: 14px; fill: none; stroke: white; stroke-width: 2; stroke-linecap: round; }
+    .nav-product { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; color: var(--text-primary); }
+    .nav-divider { width: 1px; height: 18px; background: var(--border); }
+    .nav-company { font-size: 13px; color: var(--text-tertiary); font-weight: 400; }
+    .nav-badge { font-size: 11px; font-weight: 500; color: var(--accent-blue); background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 20px; padding: 2px 10px; }
+    main { flex: 1; max-width: 720px; width: 100%; margin: 0 auto; padding: 60px 24px 80px; }
+    .hero { margin-bottom: 48px; }
+    .hero-eyebrow { font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 12px; }
+    .hero-title { font-size: 32px; font-weight: 600; letter-spacing: -0.03em; line-height: 1.15; color: var(--text-primary); margin-bottom: 12px; }
+    .hero-sub { font-size: 15px; color: var(--text-secondary); line-height: 1.6; font-weight: 300; max-width: 480px; }
+    .card { background: var(--white); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow-sm); overflow: hidden; margin-bottom: 20px; }
+    .card-header { padding: 20px 24px 0; display: flex; align-items: center; justify-content: space-between; }
+    .card-title { font-size: 13px; font-weight: 500; color: var(--text-secondary); }
+    .sources-pills { display: flex; gap: 6px; }
+    .pill { font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: 20px; background: var(--off-white); border: 1px solid var(--border); color: var(--text-tertiary); }
+    .card-body { padding: 20px 24px 24px; }
+    .input-row { display: flex; gap: 10px; margin-bottom: 12px; }
+    .input-wrap { flex: 1; position: relative; }
+    .input-wrap svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--text-tertiary); pointer-events: none; }
+    input[type="text"] { width: 100%; height: 44px; padding: 0 14px 0 40px; border: 1px solid var(--border); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 15px; color: var(--text-primary); background: var(--white); outline: none; transition: border-color 0.15s, box-shadow 0.15s; }
+    input[type="text"]::placeholder { color: var(--text-tertiary); }
+    input[type="text"]:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,0,0,0.06); }
+    select { height: 44px; padding: 0 36px 0 14px; border: 1px solid var(--border); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text-primary); background: var(--white); outline: none; cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b6b68' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; min-width: 180px; }
+    select:focus { border-color: var(--accent); outline: none; }
+    .btn-verify { height: 44px; padding: 0 24px; background: var(--accent); color: white; border: none; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; transition: opacity 0.15s, transform 0.1s; white-space: nowrap; display: flex; align-items: center; gap: 8px; }
+    .btn-verify:hover { opacity: 0.85; }
+    .btn-verify:active { transform: scale(0.98); }
+    .btn-verify:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-verify .spinner { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.6s linear infinite; display: none; }
+    .btn-verify.loading .spinner { display: block; }
+    .btn-verify.loading .btn-text { display: none; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .hint { font-size: 12px; color: var(--text-tertiary); line-height: 1.5; }
+    .hint strong { color: var(--text-secondary); font-weight: 500; }
+    #result { display: none; }
+    .result-card { border-radius: 12px; border: 1px solid var(--border); overflow: hidden; box-shadow: var(--shadow-sm); animation: fadeUp 0.25s ease; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .result-header { padding: 18px 24px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
+    .result-header.match { background: var(--match-bg); border-bottom-color: var(--match-border); }
+    .result-header.clean { background: var(--clean-bg); border-bottom-color: var(--clean-border); }
+    .result-status { display: flex; align-items: center; gap: 10px; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .status-dot.match { background: var(--match); }
+    .status-dot.clean { background: var(--clean); }
+    .status-label { font-size: 14px; font-weight: 600; letter-spacing: -0.01em; }
+    .status-label.match { color: var(--match); }
+    .status-label.clean { color: var(--clean); }
+    .status-sub { font-size: 13px; color: var(--text-secondary); }
+    .result-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+    .claim-id { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text-tertiary); letter-spacing: 0.04em; }
+    .verified-at { font-size: 11px; color: var(--text-tertiary); }
+    .hits-section { padding: 20px 24px; background: var(--white); }
+    .hits-title { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); margin-bottom: 14px; }
+    .hit-item { border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-bottom: 10px; background: var(--off-white); }
+    .hit-item:last-child { margin-bottom: 0; }
+    .hit-name { font-size: 14px; font-weight: 500; color: var(--text-primary); margin-bottom: 8px; }
+    .hit-meta { display: flex; flex-wrap: wrap; gap: 6px; }
+    .hit-tag { font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 500; }
+    .hit-tag.type { background: #f1f5f9; color: #475569; }
+    .hit-tag.score-high { background: #fef2f2; color: var(--match); }
+    .hit-tag.score-mid { background: #fffbeb; color: #d97706; }
+    .hit-tag.program { background: #f0fdf4; color: #15803d; }
+    .hit-tag.dob { background: var(--off-white); color: var(--text-secondary); border: 1px solid var(--border); }
+    .receipt-section { padding: 16px 24px; background: var(--off-white); border-top: 1px solid var(--border); }
+    .receipt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .receipt-label { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); margin-bottom: 3px; }
+    .receipt-value { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-secondary); word-break: break-all; line-height: 1.5; }
+    .disclaimer { padding: 12px 24px; background: var(--white); border-top: 1px solid var(--border); font-size: 11px; color: var(--text-tertiary); line-height: 1.6; font-style: italic; }
+    .stats-row { display: flex; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 20px; }
+    .stat { flex: 1; background: var(--white); padding: 16px 20px; text-align: center; }
+    .stat-num { font-size: 20px; font-weight: 600; letter-spacing: -0.03em; color: var(--text-primary); display: block; margin-bottom: 2px; }
+    .stat-label { font-size: 11px; color: var(--text-tertiary); font-weight: 400; }
+    footer { border-top: 1px solid var(--border); padding: 20px 40px; display: flex; align-items: center; justify-content: space-between; background: var(--white); }
+    .footer-left { font-size: 12px; color: var(--text-tertiary); }
+    .footer-right { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-tertiary); }
+    .live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--clean); animation: pulse 2s ease infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    .error-card { background: var(--match-bg); border: 1px solid var(--match-border); border-radius: 10px; padding: 16px 20px; font-size: 13px; color: var(--match); animation: fadeUp 0.2s ease; }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="nav-brand">
+      <div class="nav-logo">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 3"/></svg>
+      </div>
+      <span class="nav-product">Inner-Circle</span>
+      <div class="nav-divider"></div>
+      <span class="nav-company">Axiom-Infra</span>
+    </div>
+    <span class="nav-badge">LIVE</span>
+  </nav>
+  <main>
+    <div class="hero">
+      <p class="hero-eyebrow">Compliance Verification Infrastructure</p>
+      <h1 class="hero-title">Sanctions Screening.<br>Cryptographically Proven.</h1>
+      <p class="hero-sub">Every verification is checked against live government sources and returned with a tamper-evident receipt — not a cached result, not a guess.</p>
+    </div>
+    <div class="stats-row">
+      <div class="stat"><span class="stat-num">18,664</span><span class="stat-label">OFAC SDN Entries</span></div>
+      <div class="stat"><span class="stat-num">1,941</span><span class="stat-label">BIS Denied Persons</span></div>
+      <div class="stat"><span class="stat-num">442</span><span class="stat-label">OFAC Consolidated</span></div>
+      <div class="stat"><span class="stat-num">4hr</span><span class="stat-label">Update Frequency</span></div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Verify an entity</span>
+        <div class="sources-pills">
+          <span class="pill">OFAC</span><span class="pill">BIS</span><span class="pill">CONSOLIDATED</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="input-row">
+          <div class="input-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input type="text" id="entityInput" placeholder="Enter any name — try 'Bin Ladin' or 'John Smith'" autocomplete="off" />
+          </div>
+          <select id="listSelect">
+            <option value="ofac">OFAC SDN List</option>
+            <option value="bis">BIS Denied Persons</option>
+            <option value="ofac-consolidated">OFAC Consolidated</option>
+          </select>
+          <button class="btn-verify" id="verifyBtn" onclick="runVerification()">
+            <div class="spinner"></div>
+            <span class="btn-text">Verify</span>
+          </button>
+        </div>
+        <p class="hint">Results are checked live against <strong>government-published sources</strong>. Each query generates a unique claim ID and cryptographic audit trail.</p>
+      </div>
+    </div>
+    <div id="result"></div>
+  </main>
+  <footer>
+    <span class="footer-left">Inner-Circle by Axiom-Infra &nbsp;·&nbsp; Compliance Verification Infrastructure</span>
+    <div class="footer-right"><div class="live-dot"></div>All sources live &nbsp;·&nbsp; Updated every 4 hours</div>
+  </footer>
+  <script>
+    const API_BASE = 'https://mic-api.onrender.com';
+    const API_KEY = 'INF-2026-DEMO-001';
+    const ENDPOINTS = { 'ofac': '/verify/ofac', 'bis': '/verify/bis', 'ofac-consolidated': '/verify/ofac-consolidated' };
+    const LIST_LABELS = { 'ofac': 'OFAC SDN List', 'bis': 'BIS Denied Persons List', 'ofac-consolidated': 'OFAC Consolidated Sanctions List' };
+    document.getElementById('entityInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') runVerification(); });
+    async function runVerification() {
+      const name = document.getElementById('entityInput').value.trim();
+      const list = document.getElementById('listSelect').value;
+      if (!name) return;
+      const btn = document.getElementById('verifyBtn');
+      btn.disabled = true; btn.classList.add('loading');
+      const resultDiv = document.getElementById('result');
+      resultDiv.style.display = 'none'; resultDiv.innerHTML = '';
+      try {
+        const response = await fetch(`${API_BASE}${ENDPOINTS[list]}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Api-Key': API_KEY },
+          body: JSON.stringify({ entity_name: name })
+        });
+        if (!response.ok) throw new Error(`API error: ${response.status}`);
+        const data = await response.json();
+        renderResult(data, list);
+      } catch (err) {
+        resultDiv.style.display = 'block';
+        resultDiv.innerHTML = `<div class="error-card">Unable to reach the verification API. Please check your connection and try again.<br><small style="opacity:0.7;margin-top:4px;display:block">${err.message}</small></div>`;
+      } finally {
+        btn.disabled = false; btn.classList.remove('loading');
+      }
+    }
+    function getMatchStatus(data, list) {
+      if (list === 'ofac') return data.ofac_match;
+      if (list === 'bis') return data.bis_match;
+      if (list === 'ofac-consolidated') return data.ofac_consolidated_match;
+      return false;
+    }
+    function formatTimestamp(ts) {
+      if (!ts) return '—';
+      const d = new Date(ts);
+      return d.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', timeZoneName: 'short' });
+    }
+    function scoreClass(score) {
+      if (score >= 0.99) return 'score-high';
+      if (score >= 0.85) return 'score-mid';
+      return 'type';
+    }
+    function renderResult(data, list) {
+      const isMatch = getMatchStatus(data, list);
+      const hits = data.hits || [];
+      const claimId = data.claim_id || '—';
+      const verifiedAt = formatTimestamp(data.verified_at);
+      const sourceUrl = data.source_url || '—';
+      const sourcesChecked = (data.sources_checked || [LIST_LABELS[list]]).join(', ');
+      const disclaimer = data.compliance_disclaimer || '';
+      let hitsHTML = '';
+      if (isMatch && hits.length > 0) {
+        hitsHTML = `<div class="hits-section"><div class="hits-title">${hits.length} result${hits.length > 1 ? 's' : ''} found</div>${hits.map(h => {
+          const score = h.match_score !== undefined ? h.match_score : 1;
+          const programs = (h.program_codes || []).join(', ');
+          const dob = h.raw_match_data?.dateOfBirth || '';
+          return `<div class="hit-item"><div class="hit-name">${h.name || (h.last_name + (h.first_name ? ', ' + h.first_name : ''))}</div><div class="hit-meta"><span class="hit-tag type">${h.entity_type || 'Entity'}</span><span class="hit-tag ${scoreClass(score)}">Match ${Math.round(score * 100)}%</span><span class="hit-tag type">${h.match_type || 'exact'}</span>${programs ? `<span class="hit-tag program">${programs}</span>` : ''}${dob ? `<span class="hit-tag dob">DOB: ${dob}</span>` : ''}</div></div>`;
+        }).join('')}</div>`;
+      }
+      const html = `<div class="result-card"><div class="result-header ${isMatch ? 'match' : 'clean'}"><div class="result-status"><div class="status-dot ${isMatch ? 'match' : 'clean'}"></div><div><div class="status-label ${isMatch ? 'match' : 'clean'}">${isMatch ? 'Match Found' : 'No Match'}</div><div class="status-sub">${data.detail || ''}</div></div></div><div class="result-meta"><div class="claim-id">${claimId}</div><div class="verified-at">${verifiedAt}</div></div></div>${hitsHTML}<div class="receipt-section"><div class="receipt-grid"><div class="receipt-item"><div class="receipt-label">Claim ID</div><div class="receipt-value">${claimId}</div></div><div class="receipt-item"><div class="receipt-label">Verified At</div><div class="receipt-value">${verifiedAt}</div></div><div class="receipt-item"><div class="receipt-label">Source Checked</div><div class="receipt-value">${sourcesChecked}</div></div><div class="receipt-item"><div class="receipt-label">Source URL</div><div class="receipt-value">${sourceUrl}</div></div></div></div>${disclaimer ? `<div class="disclaimer">${disclaimer}</div>` : ''}</div>`;
+      const resultDiv = document.getElementById('result');
+      resultDiv.style.display = 'block';
+      resultDiv.innerHTML = html;
+      resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  </script>
+</body>
+</html>
