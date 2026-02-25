@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from uuid import uuid4
 from datetime import datetime, timezone
@@ -20,6 +21,12 @@ from app.infra.redis_client import get_redis_client
 from rapidfuzz import fuzz, process
 
 app = FastAPI(title="MIC POC", version="0.2")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 # ---------------------------
 # Structured Logging (A3)
 # ---------------------------
