@@ -26,38 +26,77 @@
     .nav-divider { width: 1px; height: 18px; background: var(--border); }
     .nav-company { font-size: 13px; color: var(--text-tertiary); font-weight: 400; }
     .nav-badge { font-size: 11px; font-weight: 500; color: var(--accent-blue); background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 20px; padding: 2px 10px; }
-    main { flex: 1; max-width: 720px; width: 100%; margin: 0 auto; padding: 60px 24px 80px; }
-    .hero { margin-bottom: 48px; }
+    main { flex: 1; max-width: 760px; width: 100%; margin: 0 auto; padding: 60px 24px 80px; }
+    .hero { margin-bottom: 40px; }
     .hero-eyebrow { font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 12px; }
     .hero-title { font-size: 32px; font-weight: 600; letter-spacing: -0.03em; line-height: 1.15; color: var(--text-primary); margin-bottom: 12px; }
     .hero-sub { font-size: 15px; color: var(--text-secondary); line-height: 1.6; font-weight: 300; max-width: 480px; }
-    .card { background: var(--white); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow-sm); overflow: hidden; margin-bottom: 20px; }
-    .card-header { padding: 20px 24px 0; display: flex; align-items: center; justify-content: space-between; }
-    .card-title { font-size: 13px; font-weight: 500; color: var(--text-secondary); }
-    .sources-pills { display: flex; gap: 6px; }
-    .pill { font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: 20px; background: var(--off-white); border: 1px solid var(--border); color: var(--text-tertiary); }
-    .card-body { padding: 20px 24px 24px; }
-    .input-row { display: flex; gap: 10px; margin-bottom: 12px; }
+    .stats-row { display: flex; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 24px; }
+    .stat { flex: 1; background: var(--white); padding: 16px 20px; text-align: center; }
+    .stat-num { font-size: 20px; font-weight: 600; letter-spacing: -0.03em; color: var(--text-primary); display: block; margin-bottom: 2px; }
+    .stat-label { font-size: 11px; color: var(--text-tertiary); font-weight: 400; }
+    .search-card { background: var(--white); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow-sm); overflow: hidden; margin-bottom: 20px; }
+    .search-card-body { padding: 20px 24px 24px; }
+    .input-row { display: flex; gap: 10px; margin-bottom: 14px; }
     .input-wrap { flex: 1; position: relative; }
     .input-wrap svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--text-tertiary); pointer-events: none; }
     input[type="text"] { width: 100%; height: 44px; padding: 0 14px 0 40px; border: 1px solid var(--border); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 15px; color: var(--text-primary); background: var(--white); outline: none; transition: border-color 0.15s, box-shadow 0.15s; }
     input[type="text"]::placeholder { color: var(--text-tertiary); }
     input[type="text"]:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,0,0,0.06); }
-    select { height: 44px; padding: 0 36px 0 14px; border: 1px solid var(--border); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text-primary); background: var(--white); outline: none; cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b6b68' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; min-width: 180px; }
-    select:focus { border-color: var(--accent); outline: none; }
-    .btn-verify { height: 44px; padding: 0 24px; background: var(--accent); color: white; border: none; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; transition: opacity 0.15s, transform 0.1s; white-space: nowrap; display: flex; align-items: center; gap: 8px; }
-    .btn-verify:hover { opacity: 0.85; }
-    .btn-verify:active { transform: scale(0.98); }
-    .btn-verify:disabled { opacity: 0.4; cursor: not-allowed; }
-    .btn-verify .spinner { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.6s linear infinite; display: none; }
-    .btn-verify.loading .spinner { display: block; }
-    .btn-verify.loading .btn-text { display: none; }
+    .btn-row { display: flex; gap: 10px; }
+    .btn-all { height: 44px; padding: 0 24px; background: var(--accent); color: white; border: none; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; transition: opacity 0.15s, transform 0.1s; white-space: nowrap; display: flex; align-items: center; gap: 8px; flex: 1; justify-content: center; }
+    .btn-all:hover { opacity: 0.85; }
+    .btn-all:active { transform: scale(0.98); }
+    .btn-all:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-single { height: 44px; padding: 0 20px; background: var(--white); color: var(--text-primary); border: 1px solid var(--border); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 400; cursor: pointer; transition: border-color 0.15s; white-space: nowrap; display: flex; align-items: center; gap: 8px; }
+    .btn-single:hover { border-color: var(--accent); }
+    .btn-single:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-single select { border: none; background: transparent; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text-primary); outline: none; cursor: pointer; }
+    .spinner { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.6s linear infinite; display: none; }
+    .spinner-dark { width: 14px; height: 14px; border: 2px solid rgba(0,0,0,0.15); border-top-color: var(--text-primary); border-radius: 50%; animation: spin 0.6s linear infinite; display: none; }
+    .loading .spinner, .loading .spinner-dark { display: block; }
+    .loading .btn-text { display: none; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .hint { font-size: 12px; color: var(--text-tertiary); line-height: 1.5; }
     .hint strong { color: var(--text-secondary); font-weight: 500; }
-    #result { display: none; }
+    .all-result-header { background: var(--white); border: 1px solid var(--border); border-radius: 12px 12px 0 0; padding: 18px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .all-result-header.has-match { background: var(--match-bg); border-color: var(--match-border); }
+    .all-result-header.all-clean { background: var(--clean-bg); border-color: var(--clean-border); }
+    .all-status-label { font-size: 16px; font-weight: 600; letter-spacing: -0.02em; }
+    .all-status-label.has-match { color: var(--match); }
+    .all-status-label.all-clean { color: var(--clean); }
+    .all-status-sub { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
+    .all-claim-wrap { text-align: right; }
+    .all-claim-label { font-size: 10px; color: var(--text-tertiary); margin-bottom: 2px; }
+    .all-claim-id { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text-tertiary); }
+    .source-rows { border: 1px solid var(--border); border-top: none; overflow: hidden; background: var(--white); }
+    .source-row { display: flex; align-items: flex-start; padding: 16px 24px; border-bottom: 1px solid var(--border); gap: 16px; }
+    .source-row:last-child { border-bottom: none; }
+    .source-indicator { display: flex; align-items: center; gap: 8px; min-width: 220px; padding-top: 2px; }
+    .source-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .source-dot.match { background: var(--match); }
+    .source-dot.clean { background: var(--clean); }
+    .source-dot.pending { background: #d1d5db; animation: pulse 1s ease infinite; }
+    .source-name { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+    .source-count { font-size: 11px; color: var(--text-tertiary); }
+    .source-status-badge { display: inline-flex; align-items: center; font-size: 12px; font-weight: 500; padding: 3px 10px; border-radius: 20px; }
+    .source-status-badge.match { background: var(--match-bg); color: var(--match); border: 1px solid var(--match-border); }
+    .source-status-badge.clean { background: var(--clean-bg); color: var(--clean); border: 1px solid var(--clean-border); }
+    .source-status-badge.pending { background: #f9fafb; color: var(--text-tertiary); border: 1px solid var(--border); }
+    .source-hits { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+    .mini-hit { background: var(--off-white); border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; }
+    .mini-hit-name { font-size: 13px; font-weight: 500; color: var(--text-primary); margin-bottom: 6px; }
+    .mini-hit-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+    .hit-tag { font-size: 10px; padding: 2px 7px; border-radius: 4px; font-weight: 500; }
+    .hit-tag.type { background: #f1f5f9; color: #475569; }
+    .hit-tag.score-high { background: #fef2f2; color: var(--match); }
+    .hit-tag.score-mid { background: #fffbeb; color: #d97706; }
+    .hit-tag.program { background: #f0fdf4; color: #15803d; }
+    .receipt-strip { background: var(--off-white); border: 1px solid var(--border); border-top: none; border-radius: 0 0 12px 12px; padding: 14px 24px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .receipt-label { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); margin-bottom: 3px; }
+    .receipt-value { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-secondary); word-break: break-all; line-height: 1.5; }
+    #single-result { display: none; }
     .result-card { border-radius: 12px; border: 1px solid var(--border); overflow: hidden; box-shadow: var(--shadow-sm); animation: fadeUp 0.25s ease; }
-    @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
     .result-header { padding: 18px 24px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
     .result-header.match { background: var(--match-bg); border-bottom-color: var(--match-border); }
     .result-header.clean { background: var(--clean-bg); border-bottom-color: var(--clean-border); }
@@ -65,12 +104,12 @@
     .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
     .status-dot.match { background: var(--match); }
     .status-dot.clean { background: var(--clean); }
-    .status-label { font-size: 14px; font-weight: 600; letter-spacing: -0.01em; }
+    .status-label { font-size: 14px; font-weight: 600; }
     .status-label.match { color: var(--match); }
     .status-label.clean { color: var(--clean); }
     .status-sub { font-size: 13px; color: var(--text-secondary); }
     .result-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
-    .claim-id { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text-tertiary); letter-spacing: 0.04em; }
+    .claim-id { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text-tertiary); }
     .verified-at { font-size: 11px; color: var(--text-tertiary); }
     .hits-section { padding: 20px 24px; background: var(--white); }
     .hits-title { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); margin-bottom: 14px; }
@@ -78,31 +117,21 @@
     .hit-item:last-child { margin-bottom: 0; }
     .hit-name { font-size: 14px; font-weight: 500; color: var(--text-primary); margin-bottom: 8px; }
     .hit-meta { display: flex; flex-wrap: wrap; gap: 6px; }
-    .hit-tag { font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 500; }
-    .hit-tag.type { background: #f1f5f9; color: #475569; }
-    .hit-tag.score-high { background: #fef2f2; color: var(--match); }
-    .hit-tag.score-mid { background: #fffbeb; color: #d97706; }
-    .hit-tag.program { background: #f0fdf4; color: #15803d; }
-    .hit-tag.dob { background: var(--off-white); color: var(--text-secondary); border: 1px solid var(--border); }
     .receipt-section { padding: 16px 24px; background: var(--off-white); border-top: 1px solid var(--border); }
     .receipt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .receipt-label { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); margin-bottom: 3px; }
-    .receipt-value { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-secondary); word-break: break-all; line-height: 1.5; }
     .disclaimer { padding: 12px 24px; background: var(--white); border-top: 1px solid var(--border); font-size: 11px; color: var(--text-tertiary); line-height: 1.6; font-style: italic; }
-    .stats-row { display: flex; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 20px; }
-    .stat { flex: 1; background: var(--white); padding: 16px 20px; text-align: center; }
-    .stat-num { font-size: 20px; font-weight: 600; letter-spacing: -0.03em; color: var(--text-primary); display: block; margin-bottom: 2px; }
-    .stat-label { font-size: 11px; color: var(--text-tertiary); font-weight: 400; }
+    .error-card { background: var(--match-bg); border: 1px solid var(--match-border); border-radius: 10px; padding: 16px 20px; font-size: 13px; color: var(--match); animation: fadeUp 0.2s ease; margin-bottom: 16px; }
     footer { border-top: 1px solid var(--border); padding: 20px 40px; display: flex; align-items: center; justify-content: space-between; background: var(--white); }
     .footer-left { font-size: 12px; color: var(--text-tertiary); }
     .footer-right { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-tertiary); }
     .live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--clean); animation: pulse 2s ease infinite; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-    .error-card { background: var(--match-bg); border: 1px solid var(--match-border); border-radius: 10px; padding: 16px 20px; font-size: 13px; color: var(--match); animation: fadeUp 0.2s ease; }
+    #all-result { display: none; }
   </style>
 </head>
 <body>
-  <nav>
+<nav>
     <div class="nav-brand">
       <div class="nav-logo">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 3"/></svg>
@@ -113,103 +142,242 @@
     </div>
     <span class="nav-badge">LIVE</span>
   </nav>
+
   <main>
     <div class="hero">
       <p class="hero-eyebrow">Compliance Verification Infrastructure</p>
       <h1 class="hero-title">Sanctions Screening.<br>Cryptographically Proven.</h1>
       <p class="hero-sub">Every verification is checked against live government sources and returned with a tamper-evident receipt — not a cached result, not a guess.</p>
     </div>
+
     <div class="stats-row">
       <div class="stat"><span class="stat-num">18,664</span><span class="stat-label">OFAC SDN Entries</span></div>
       <div class="stat"><span class="stat-num">1,941</span><span class="stat-label">BIS Denied Persons</span></div>
       <div class="stat"><span class="stat-num">442</span><span class="stat-label">OFAC Consolidated</span></div>
       <div class="stat"><span class="stat-num">4hr</span><span class="stat-label">Update Frequency</span></div>
     </div>
-    <div class="card">
-      <div class="card-header">
-        <span class="card-title">Verify an entity</span>
-        <div class="sources-pills">
-          <span class="pill">OFAC</span><span class="pill">BIS</span><span class="pill">CONSOLIDATED</span>
-        </div>
-      </div>
-      <div class="card-body">
+
+    <div class="search-card">
+      <div class="search-card-body">
         <div class="input-row">
           <div class="input-wrap">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
             <input type="text" id="entityInput" placeholder="Enter any name — try 'Bin Ladin' or 'John Smith'" autocomplete="off" />
           </div>
-          <select id="listSelect">
-            <option value="ofac">OFAC SDN List</option>
-            <option value="bis">BIS Denied Persons</option>
-            <option value="ofac-consolidated">OFAC Consolidated</option>
-          </select>
-          <button class="btn-verify" id="verifyBtn" onclick="runVerification()">
+        </div>
+        <div class="btn-row">
+          <button class="btn-all" id="verifyAllBtn" onclick="runAll()">
             <div class="spinner"></div>
-            <span class="btn-text">Verify</span>
+            <span class="btn-text">⚡ Verify All Sources</span>
+          </button>
+          <button class="btn-single" id="verifySingleBtn" onclick="runSingle()">
+            <div class="spinner-dark"></div>
+            <span class="btn-text">Check single: <select id="listSelect" onclick="event.stopPropagation()">
+              <option value="ofac">OFAC SDN</option>
+              <option value="bis">BIS Denied Persons</option>
+              <option value="ofac-consolidated">OFAC Consolidated</option>
+            </select></span>
           </button>
         </div>
-        <p class="hint">Results are checked live against <strong>government-published sources</strong>. Each query generates a unique claim ID and cryptographic audit trail.</p>
+        <p class="hint" style="margin-top:12px">Results are checked live against <strong>government-published sources</strong>. Each query generates a unique claim ID and cryptographic audit trail.</p>
       </div>
     </div>
-    <div id="result"></div>
+
+    <div id="error-area"></div>
+    <div id="all-result"></div>
+    <div id="single-result"></div>
+
   </main>
+  <div style="max-width:760px;width:100%;margin:0 auto;padding:0 24px 40px;">
+    <div style="border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--white);">
+      <button onclick="toggleExplainer()" id="explainer-toggle" style="width:100%;padding:18px 24px;background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;font-family:'DM Sans',sans-serif;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:22px;height:22px;background:var(--off-white);border:1px solid var(--border);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:12px;">?</div>
+          <span style="font-size:14px;font-weight:500;color:var(--text-primary);">What does this receipt mean?</span>
+          <span style="font-size:12px;color:var(--text-tertiary);">Plain-language guide to every field</span>
+        </div>
+        <svg id="explainer-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;color:var(--text-tertiary);transition:transform 0.2s;"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div id="explainer-body" style="display:none;border-top:1px solid var(--border);">
+        <div style="padding:20px 24px 8px;">
+          <p style="font-size:13px;color:var(--text-secondary);line-height:1.7;">Every verification Inner-Circle performs generates a <strong style="color:var(--text-primary);">cryptographic receipt</strong> — a tamper-evident record that proves exactly what was checked, against which source, and when. Here is what each field means in plain English and why it matters to regulators.</p>
+        </div>
+        <div style="padding:12px 24px 24px;display:flex;flex-direction:column;gap:12px;">
+          <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+            <div style="background:var(--off-white);padding:12px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);">
+              <span style="font-family:'DM Mono',monospace;font-size:11px;background:var(--white);border:1px solid var(--border);border-radius:4px;padding:2px 8px;color:var(--text-secondary);">claim_id</span>
+              <span style="font-size:13px;font-weight:600;color:var(--text-primary);">Claim ID</span>
+            </div>
+            <div style="padding:14px 16px;display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+              <div><div style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-tertiary);margin-bottom:5px;">Plain English</div><p style="font-size:13px;color:var(--text-secondary);line-height:1.6;">A unique fingerprint for this specific verification event. Like a receipt number — no two are ever the same.</p></div>
+              <div><div style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-tertiary);margin-bottom:5px;">Why Regulators Care</div><p style="font-size:13px;color:var(--text-secondary);line-height:1.6;">If an examiner asks "did you screen this customer on this date?" — you produce the Claim ID. It is your proof of due diligence, retrievable at any time.</p></div>
+            </div>
+          </div>
+          <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+            <div style="background:var(--off-white);padding:12px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);">
+              <span style="font-family:'DM Mono',monospace;font-size:11px;background:var(--white);border:1px solid var(--border);border-radius:4px;padding:2px 8px;color:var(--text-secondary);">verified_at</span>
+              <span style="font-size:13px;font-weight:600;color:var(--text-primary);">Verified At</span>
+            </div>
+            <div style="padding:14px 16px;display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+              <div><div style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-tertiary);margin-bottom:5px;">Plain English</div><p style="font-size:13px;color:var(--text-secondary);line-height:1.6;">The exact UTC timestamp the live government source was queried. Not when the data was cached — when this specific check was run.</p></div>
+              <div><div style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-tertiary);margin-bottom:5px;">Why Regulators Care</div><p style="font-size:13px;color:var(--text-secondary);line-height:1.6;">OFAC enforcement guidelines and BSA/AML examiners require proof of when a check occurred. A timestamp tied to a live source query is legally defensible. A log entry from memory is not.</p></div>
+            </div>
+          </div>
+          <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+            <div style="background:var(--off-white);padding:12px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);">
+              <span style="font-family:'DM Mono',monospace;font-size:11px;background:var(--white);border:1px solid var(--border);border-radius:4px;padding:2px 8px;color:var(--text-secondary);">sources_checked</span>
+              <span style="font-size:13px;font-weight:600;color:var(--text-primary);">Source Checked</span>
+            </div>
+            <div style="padding:14px 16px;display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+              <div><div style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-tertiary);margin-bottom:5px;">Plain English</div><p style="font-size:13px;color:var(--text-secondary);line-height:1.6;">Which government list was queried. OFAC SDN is the US Treasury Specially Designated Nationals list. BIS DPL is the Dept of Commerce Denied Persons List. OFAC Consolidated covers additional sanctions programs.</p></div>
+              <div><div style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-tertiary);margin-bottom:5px;">Why Regulators Care</div><p style="font-size:13px;color:var(--text-secondary);line-height:1.6;">OFAC violations carry penalties up to $1M per transaction. Proving you checked the correct authoritative source — not a third-party aggregator — is the difference between a clean audit and an enforcement action.</p></div>
+            </div>
+          </div>
+          <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+            <div style="background:var(--off-white);padding:12px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);">
+              <span style="font-family:'DM Mono',monospace;font-size:11px;background:var(--white);border:1px solid var(--border);border-radius:4px;padding:2px 8px;color:var(--text-secondary);">source_url</span>
+              <span style="font-size:13px;font-weight:600;color:var(--text-primary);">Source URL</span>
+            </div>
+            <div style="padding:14px 16px;display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+              <div><div style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-tertiary);margin-bottom:5px;">Plain English</div><p style="font-size:13px;color:var(--text-secondary);line-height:1.6;">A direct link to the government database we checked against. Anyone — including your examiner — can visit this URL and verify the source themselves.</p></div>
+              <div><div style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-tertiary);margin-bottom:5px;">Why Regulators Care</div><p style="font-size:13px;color:var(--text-secondary);line-height:1.6;">Full provenance means the audit trail is independently verifiable. You are not asking an examiner to trust your records — you are showing them the government source directly.</p></div>
+            </div>
+          </div>
+          <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+            <div style="background:var(--off-white);padding:12px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);">
+              <span style="font-family:'DM Mono',monospace;font-size:11px;background:var(--white);border:1px solid var(--border);border-radius:4px;padding:2px 8px;color:var(--text-secondary);">match_score</span>
+              <span style="font-size:13px;font-weight:600;color:var(--text-primary);">Match Score</span>
+            </div>
+            <div style="padding:14px 16px;display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+              <div><div style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-tertiary);margin-bottom:5px;">Plain English</div><p style="font-size:13px;color:var(--text-secondary);line-height:1.6;">100% means exact match. 85-99% means a close but not identical name — the system catches misspellings, alternate transliterations, and name variations that exact-match systems miss entirely.</p></div>
+              <div><div style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-tertiary);margin-bottom:5px;">Why Regulators Care</div><p style="font-size:13px;color:var(--text-secondary);line-height:1.6;">Sanctions evaders routinely use name variations. Fuzzy matching with a documented confidence score demonstrates reasonable procedures defense under OFAC guidelines.</p></div>
+            </div>
+          </div>
+        </div>
+        <div style="padding:16px 24px;background:var(--off-white);border-top:1px solid var(--border);">
+          <p style="font-size:12px;color:var(--text-tertiary);line-height:1.6;font-style:italic;">Inner-Circle provides custody of verification records, not legal compliance advice. Each receipt documents what was checked and when — your compliance team determines the appropriate action. OFAC regulations require recordkeeping for 5 years under 31 CFR Part 501.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <footer>
-    <span class="footer-left">Inner-Circle by Axiom-Infra &nbsp;·&nbsp; Compliance Verification Infrastructure</span>
+    <span class="footer-left">Inner-Circle by Axiom-Infra &nbsp;·&nbsp; Compliance Verification Infrastructure &nbsp;·&nbsp; <a href="mailto:info@axiominfra.io" style="color:var(--accent-blue);text-decoration:none;">info@axiominfra.io</a></span>
     <div class="footer-right"><div class="live-dot"></div>All sources live &nbsp;·&nbsp; Updated every 4 hours</div>
   </footer>
   <script>
     const API_BASE = 'https://mic-api.onrender.com';
     const API_KEY = 'INF-2026-DEMO-001';
-    const ENDPOINTS = { 'ofac': '/verify/ofac', 'bis': '/verify/bis', 'ofac-consolidated': '/verify/ofac-consolidated' };
-    const LIST_LABELS = { 'ofac': 'OFAC SDN List', 'bis': 'BIS Denied Persons List', 'ofac-consolidated': 'OFAC Consolidated Sanctions List' };
-    document.getElementById('entityInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') runVerification(); });
-    async function runVerification() {
+    const SOURCES = [
+      { key: 'ofac', label: 'OFAC SDN List', endpoint: '/verify/ofac', count: '18,664 entries', matchField: 'ofac_match' },
+      { key: 'bis', label: 'BIS Denied Persons', endpoint: '/verify/bis', count: '1,941 entries', matchField: 'bis_match' },
+      { key: 'ofac-consolidated', label: 'OFAC Consolidated', endpoint: '/verify/ofac-consolidated', count: '442 entries', matchField: 'ofac_consolidated_match' },
+    ];
+    document.getElementById('entityInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') runAll(); });
+    function formatTimestamp(ts) {
+      if (!ts) return '—';
+      const d = new Date(ts);
+      return d.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', timeZoneName: 'short' });
+    }
+    function scoreClass(score) { return score >= 0.99 ? 'score-high' : score >= 0.85 ? 'score-mid' : 'type'; }
+    function showError(msg) { document.getElementById('error-area').innerHTML = `<div class="error-card">${msg}</div>`; }
+    function clearError() { document.getElementById('error-area').innerHTML = ''; }
+    function toggleExplainer() {
+      const body = document.getElementById('explainer-body');
+      const chevron = document.getElementById('explainer-chevron');
+      const open = body.style.display === 'block';
+      body.style.display = open ? 'none' : 'block';
+      chevron.style.transform = open ? '' : 'rotate(180deg)';
+    }
+    async function runAll() {
+      const name = document.getElementById('entityInput').value.trim();
+      if (!name) return;
+      clearError();
+      const btn = document.getElementById('verifyAllBtn');
+      btn.disabled = true; btn.classList.add('loading');
+      document.getElementById('verifySingleBtn').disabled = true;
+      document.getElementById('single-result').style.display = 'none';
+      const allDiv = document.getElementById('all-result');
+      allDiv.style.display = 'block';
+      allDiv.innerHTML = buildSkeleton(name);
+      const promises = SOURCES.map(s =>
+        fetch(`${API_BASE}${s.endpoint}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Api-Key': API_KEY },
+          body: JSON.stringify({ entity_name: name })
+        }).then(r => { if (!r.ok) throw new Error(`${s.label}: HTTP ${r.status}`); return r.json(); })
+          .then(data => ({ source: s, data, error: null }))
+          .catch(err => ({ source: s, data: null, error: err.message }))
+      );
+      const results = await Promise.all(promises);
+      btn.disabled = false; btn.classList.remove('loading');
+      document.getElementById('verifySingleBtn').disabled = false;
+      renderAllResults(name, results);
+    }
+    function buildSkeleton(name) {
+      const rows = SOURCES.map(s => `<div class="source-row"><div class="source-indicator"><div class="source-dot pending"></div><div><div class="source-name">${s.label}</div><div class="source-count">${s.count}</div></div></div><div class="source-status"><span class="source-status-badge pending">Checking…</span></div></div>`).join('');
+      return `<div style="margin-bottom:20px"><div class="all-result-header"><div><div class="all-status-label" style="color:var(--text-tertiary)">Verifying "${name}"…</div><div class="all-status-sub">Checking all three sources simultaneously</div></div></div><div class="source-rows">${rows}</div></div>`;
+    }
+    function renderAllResults(name, results) {
+      const anyMatch = results.some(r => r.data && r.data[r.source.matchField]);
+      const totalHits = results.reduce((sum, r) => sum + (r.data?.hits?.length || 0), 0);
+      const headerClass = anyMatch ? 'has-match' : 'all-clean';
+      const labelClass = anyMatch ? 'has-match' : 'all-clean';
+      const statusText = anyMatch ? `Match found — ${totalHits} result${totalHits !== 1 ? 's' : ''} across all sources` : `No match — entity cleared across all ${SOURCES.length} sources`;
+      const verifiedAt = results.find(r => r.data?.verified_at)?.data?.verified_at;
+      const claimIds = results.filter(r => r.data?.claim_id).map(r => r.data.claim_id.slice(0, 8) + '…');
+      const rows = results.map(r => {
+        const isMatch = r.data && r.data[r.source.matchField];
+        const hits = r.data?.hits || [];
+        const dotClass = r.error ? 'pending' : isMatch ? 'match' : 'clean';
+        const badgeClass = r.error ? 'pending' : isMatch ? 'match' : 'clean';
+        const badgeText = r.error ? 'Error' : isMatch ? `${hits.length} match${hits.length !== 1 ? 'es' : ''}` : 'Clear';
+        let hitsHTML = '';
+        if (isMatch && hits.length > 0) {
+          hitsHTML = `<div class="source-hits">${hits.map(h => {
+            const score = h.match_score !== undefined ? h.match_score : 1;
+            const programs = (h.program_codes || []).join(', ');
+            return `<div class="mini-hit"><div class="mini-hit-name">${h.name || (h.last_name + (h.first_name ? ', ' + h.first_name : ''))}</div><div class="mini-hit-tags"><span class="hit-tag type">${h.entity_type || 'Entity'}</span><span class="hit-tag ${scoreClass(score)}">Match ${Math.round(score * 100)}%</span>${programs ? `<span class="hit-tag program">${programs}</span>` : ''}</div></div>`;
+          }).join('')}</div>`;
+        }
+        return `<div class="source-row"><div class="source-indicator"><div class="source-dot ${dotClass}"></div><div><div class="source-name">${r.source.label}</div><div class="source-count">${r.source.count}</div></div></div><div class="source-status"><span class="source-status-badge ${badgeClass}">${badgeText}</span>${hitsHTML}</div></div>`;
+      }).join('');
+      document.getElementById('all-result').innerHTML = `<div style="margin-bottom:20px"><div class="all-result-header ${headerClass}"><div><div class="all-status-label ${labelClass}">${statusText}</div><div class="all-status-sub">Queried: "${name}" &nbsp;·&nbsp; ${formatTimestamp(verifiedAt)}</div></div>${claimIds.length ? `<div class="all-claim-wrap"><div class="all-claim-label">Claim IDs</div><div class="all-claim-id">${claimIds.join(', ')}</div></div>` : ''}</div><div class="source-rows">${rows}</div><div class="receipt-strip"><div class="receipt-item"><div class="receipt-label">Sources Checked</div><div class="receipt-value">OFAC SDN · BIS DPL · OFAC Consolidated</div></div><div class="receipt-item"><div class="receipt-label">Verified At</div><div class="receipt-value">${formatTimestamp(verifiedAt)}</div></div><div class="receipt-item"><div class="receipt-label">Source Authority</div><div class="receipt-value">US Treasury · Dept of Commerce</div></div></div></div>`;
+    }
+    async function runSingle() {
       const name = document.getElementById('entityInput').value.trim();
       const list = document.getElementById('listSelect').value;
       if (!name) return;
-      const btn = document.getElementById('verifyBtn');
+      clearError();
+      const source = SOURCES.find(s => s.key === list);
+      const btn = document.getElementById('verifySingleBtn');
       btn.disabled = true; btn.classList.add('loading');
-      const resultDiv = document.getElementById('result');
+      document.getElementById('verifyAllBtn').disabled = true;
+      document.getElementById('all-result').style.display = 'none';
+      const resultDiv = document.getElementById('single-result');
       resultDiv.style.display = 'none'; resultDiv.innerHTML = '';
       try {
-        const response = await fetch(`${API_BASE}${ENDPOINTS[list]}`, {
+        const response = await fetch(`${API_BASE}${source.endpoint}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'X-Api-Key': API_KEY },
           body: JSON.stringify({ entity_name: name })
         });
         if (!response.ok) throw new Error(`API error: ${response.status}`);
         const data = await response.json();
-        renderResult(data, list);
+        renderSingle(data, source);
       } catch (err) {
-        resultDiv.style.display = 'block';
-        resultDiv.innerHTML = `<div class="error-card">Unable to reach the verification API. Please check your connection and try again.<br><small style="opacity:0.7;margin-top:4px;display:block">${err.message}</small></div>`;
+        showError(`Unable to reach the verification API. ${err.message}`);
       } finally {
         btn.disabled = false; btn.classList.remove('loading');
+        document.getElementById('verifyAllBtn').disabled = false;
       }
     }
-    function getMatchStatus(data, list) {
-      if (list === 'ofac') return data.ofac_match;
-      if (list === 'bis') return data.bis_match;
-      if (list === 'ofac-consolidated') return data.ofac_consolidated_match;
-      return false;
-    }
-    function formatTimestamp(ts) {
-      if (!ts) return '—';
-      const d = new Date(ts);
-      return d.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', timeZoneName: 'short' });
-    }
-    function scoreClass(score) {
-      if (score >= 0.99) return 'score-high';
-      if (score >= 0.85) return 'score-mid';
-      return 'type';
-    }
-    function renderResult(data, list) {
-      const isMatch = getMatchStatus(data, list);
+    function renderSingle(data, source) {
+      const isMatch = data[source.matchField];
       const hits = data.hits || [];
       const claimId = data.claim_id || '—';
       const verifiedAt = formatTimestamp(data.verified_at);
       const sourceUrl = data.source_url || '—';
-      const sourcesChecked = (data.sources_checked || [LIST_LABELS[list]]).join(', ');
       const disclaimer = data.compliance_disclaimer || '';
       let hitsHTML = '';
       if (isMatch && hits.length > 0) {
@@ -217,11 +385,11 @@
           const score = h.match_score !== undefined ? h.match_score : 1;
           const programs = (h.program_codes || []).join(', ');
           const dob = h.raw_match_data?.dateOfBirth || '';
-          return `<div class="hit-item"><div class="hit-name">${h.name || (h.last_name + (h.first_name ? ', ' + h.first_name : ''))}</div><div class="hit-meta"><span class="hit-tag type">${h.entity_type || 'Entity'}</span><span class="hit-tag ${scoreClass(score)}">Match ${Math.round(score * 100)}%</span><span class="hit-tag type">${h.match_type || 'exact'}</span>${programs ? `<span class="hit-tag program">${programs}</span>` : ''}${dob ? `<span class="hit-tag dob">DOB: ${dob}</span>` : ''}</div></div>`;
+          return `<div class="hit-item"><div class="hit-name">${h.name || (h.last_name + (h.first_name ? ', ' + h.first_name : ''))}</div><div class="hit-meta"><span class="hit-tag type">${h.entity_type || 'Entity'}</span><span class="hit-tag ${scoreClass(score)}">Match ${Math.round(score * 100)}%</span>${programs ? `<span class="hit-tag program">${programs}</span>` : ''}${dob ? `<span class="hit-tag type">DOB: ${dob}</span>` : ''}</div></div>`;
         }).join('')}</div>`;
       }
-      const html = `<div class="result-card"><div class="result-header ${isMatch ? 'match' : 'clean'}"><div class="result-status"><div class="status-dot ${isMatch ? 'match' : 'clean'}"></div><div><div class="status-label ${isMatch ? 'match' : 'clean'}">${isMatch ? 'Match Found' : 'No Match'}</div><div class="status-sub">${data.detail || ''}</div></div></div><div class="result-meta"><div class="claim-id">${claimId}</div><div class="verified-at">${verifiedAt}</div></div></div>${hitsHTML}<div class="receipt-section"><div class="receipt-grid"><div class="receipt-item"><div class="receipt-label">Claim ID</div><div class="receipt-value">${claimId}</div></div><div class="receipt-item"><div class="receipt-label">Verified At</div><div class="receipt-value">${verifiedAt}</div></div><div class="receipt-item"><div class="receipt-label">Source Checked</div><div class="receipt-value">${sourcesChecked}</div></div><div class="receipt-item"><div class="receipt-label">Source URL</div><div class="receipt-value">${sourceUrl}</div></div></div></div>${disclaimer ? `<div class="disclaimer">${disclaimer}</div>` : ''}</div>`;
-      const resultDiv = document.getElementById('result');
+      const html = `<div class="result-card"><div class="result-header ${isMatch ? 'match' : 'clean'}"><div class="result-status"><div class="status-dot ${isMatch ? 'match' : 'clean'}"></div><div><div class="status-label ${isMatch ? 'match' : 'clean'}">${isMatch ? 'Match Found' : 'No Match'}</div><div class="status-sub">${source.label}</div></div></div><div class="result-meta"><div class="claim-id">${claimId}</div><div class="verified-at">${verifiedAt}</div></div></div>${hitsHTML}<div class="receipt-section"><div class="receipt-grid"><div><div class="receipt-label">Claim ID</div><div class="receipt-value">${claimId}</div></div><div><div class="receipt-label">Verified At</div><div class="receipt-value">${verifiedAt}</div></div><div><div class="receipt-label">Source</div><div class="receipt-value">${source.label}</div></div><div><div class="receipt-label">Source URL</div><div class="receipt-value">${sourceUrl}</div></div></div></div>${disclaimer ? `<div class="disclaimer">${disclaimer}</div>` : ''}</div>`;
+      const resultDiv = document.getElementById('single-result');
       resultDiv.style.display = 'block';
       resultDiv.innerHTML = html;
       resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
