@@ -68,7 +68,7 @@
     .loading .btn-text { display: none; }
 
     /* Zone 2: Results / Legend — warm off-white */
-    .zone-results { background: var(--zone-results); flex: 1; overflow: hidden; padding: 11px 24px; display: flex; flex-direction: column; }
+    .zone-results { background: var(--zone-results); flex: 1; overflow-y: auto; padding: 11px 24px; display: flex; flex-direction: column; gap: 10px; }
 
     /* Legend */
     .legend-title { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.09em; color: var(--text-tertiary); margin-bottom: 2px; }
@@ -368,9 +368,7 @@
     async function runAll() {
       const name = document.getElementById('entityInput').value.trim();
       if (!name) return;
-      document.getElementById('legendView').style.display = 'none';
-      const rv = document.getElementById('resultsView');
-      rv.style.display = 'flex'; rv.style.flexDirection = 'column';
+      document.getElementById('resultsView').style.display = 'block';
       document.getElementById('errorArea').innerHTML = '';
 
       const btn = document.getElementById('verifyBtn');
