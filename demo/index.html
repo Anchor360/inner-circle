@@ -281,7 +281,7 @@
             <div class="rc-row"><div class="rc-key">source_url</div><div class="rc-val">sanctionslistservice.ofac.treas.gov</div></div>
             <div class="rc-row"><div class="rc-key">entries_checked</div><div class="rc-val">18,664</div></div>
             <div class="rc-row"><div class="rc-key">result</div><div class="rc-val">NO_MATCH</div></div>
-            <div class="rc-row"><div class="rc-key">content_hash</div><div class="rc-val">sha256:8d4f2a9c…</div></div>
+            <div class="rc-row"><div class="rc-key">detail</div><div class="rc-val">No match found on OFAC SDN list</div></div>
           </div>
         </div>
         <div class="receipt-notice" style="opacity:0.3;">Inner-Circle provides custody of verification records, not legal compliance advice. Your compliance team determines appropriate action. OFAC requires 5-year recordkeeping under 31 CFR Part 501.</div>
@@ -324,8 +324,7 @@
       const hits = r.data?.hits || [];
       const verifiedAt = r.data?.verified_at;
       const claimId = r.data?.claim_id || '—';
-      const contentHash = r.data?.content_hash || r.data?.list_hash;
-      const hashDisplay = contentHash ? `sha256:${String(contentHash).slice(0,16)}…` : '—';
+
 
       const cardClass = r.error ? '' : isMatch ? 'r-match' : 'r-clean';
       const headClass = r.error ? '' : isMatch ? 'r-match' : 'r-clean';
@@ -360,7 +359,7 @@
             <div class="rc-row"><div class="rc-key">entries_checked</div><div class="rc-val">${s.entries}</div></div>
             <div class="rc-row"><div class="rc-key">result</div><div class="rc-val ${resultValClass}">${resultText}</div></div>
             ${extraRows}
-            <div class="rc-row"><div class="rc-key">content_hash</div><div class="rc-val">${hashDisplay}</div></div>
+            ${r.data?.detail ? `<div class="rc-row"><div class="rc-key">detail</div><div class="rc-val">${r.data.detail}</div></div>` : ''}
           </div>
         </div>
         <div class="receipt-notice">Inner-Circle provides custody of verification records, not legal compliance advice. Your compliance team determines appropriate action. OFAC requires 5-year recordkeeping under 31 CFR Part 501.</div>`;
