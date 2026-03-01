@@ -383,6 +383,34 @@ def get_latest_event_hash(cur) -> str | None:
     row = cur.fetchone()
     return row[0] if row else None
 
+def get_active_ingestion_version(source: str, as_of: datetime) -> dict | None:
+    """Fetch the most recent ingestion version for a source at a given moment."""
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT version_id, source, content_hash, entry_count, ingested_at
+        FROM ingestion_versions
+        WHERE source = %s
+          AND ingested_at <= %s
+        ORDER BY ingested_at DESC
+        LIMIT 1
+        """,
+        (source, as_of),
+    )
+    row = cur.fetchone()
+    cur.close()
+    conn.close()
+    if not row:
+        return None
+    return {
+        "version_id": row[0],
+        "source": row[1],
+        "content_hash": row[2],
+        "entry_count": row[3],
+        "ingested_at": row[4].isoformat(),
+    }
+
 
 def compute_event_hash(
     event_id: str,
@@ -1173,6 +1201,7 @@ async def verify_ofac(request: OFACVerifyRequest):
         verdict_id = str(uuid.uuid4())
         event_id = str(uuid.uuid4())
         now = datetime.now(timezone.utc)
+        sdn_version = get_active_ingestion_version("ofac_sdn", now)
         content_hash = hashlib.sha256(entity_name.encode()).hexdigest()
 
         cur.execute("""
@@ -1220,6 +1249,7 @@ async def verify_ofac(request: OFACVerifyRequest):
         "claim_id": claim_id,
         "verified_at": now.isoformat(),
         "source_url": "https://sanctionslistservice.ofac.treas.gov/api/publicationpreview/exports/sdn.xml",
+        "data_version": sdn_version,
         "compliance_disclaimer": "This receipt documents the results of a query against government-published sanctions lists. Compliance determinations remain the responsibility of the querying organization.",
     }
 
@@ -1289,6 +1319,7 @@ async def verify_bis(request: OFACVerifyRequest):
         claim_id = str(uuid.uuid4())
         event_id = str(uuid.uuid4())
         now = datetime.now(timezone.utc)
+        bis_version = get_active_ingestion_version("bis_dpl", now)
 
         cur.execute("""
             INSERT INTO claims (claim_id, content, created_at)
@@ -1335,6 +1366,7 @@ async def verify_bis(request: OFACVerifyRequest):
         "claim_id": claim_id,
         "verified_at": now.isoformat(),
         "source_url": "https://www.bis.doc.gov/dpl/dpl.txt",
+        "data_version": bis_version,
         "compliance_disclaimer": "This receipt documents the results of a query against government-published sanctions lists. Compliance determinations remain the responsibility of the querying organization.",
     }
 
@@ -1434,6 +1466,7 @@ async def verify_ofac_consolidated(request: OFACVerifyRequest):
         claim_id = str(uuid.uuid4())
         event_id = str(uuid.uuid4())
         now = datetime.now(timezone.utc)
+        con_version = get_active_ingestion_version("ofac_consolidated", now)
 
         cur.execute("""
             INSERT INTO claims (claim_id, content, created_at)
@@ -1482,6 +1515,7 @@ async def verify_ofac_consolidated(request: OFACVerifyRequest):
         "claim_id": claim_id,
         "verified_at": now.isoformat(),
         "source_url": "https://sanctionslistservice.ofac.treas.gov/api/publicationpreview/exports/consolidated.xml",
+        "data_version": con_version,
         "compliance_disclaimer": "This receipt documents the results of a query against government-published sanctions lists. Compliance determinations remain the responsibility of the querying organization.",
     }
 
@@ -1573,6 +1607,7 @@ async def verify_ssi(request: OFACVerifyRequest):
         claim_id = str(uuid.uuid4())
         event_id = str(uuid.uuid4())
         now = datetime.now(timezone.utc)
+        ssi_version = get_active_ingestion_version("ofac_consolidated", now)
 
         cur.execute("""
             INSERT INTO claims (claim_id, content, created_at)
@@ -1619,6 +1654,7 @@ async def verify_ssi(request: OFACVerifyRequest):
         "claim_id": claim_id,
         "verified_at": now.isoformat(),
         "source_url": "https://sanctionslistservice.ofac.treas.gov/api/PublicationPreview/exports/CONSOLIDATED.XML",
+        "data_version": ssi_version,
         "data_note": "SSI-designated entities are sourced from OFAC's Consolidated Sanctions List export. OFAC does not publish SSI as a standalone machine-readable file.",
         "compliance_disclaimer": "This receipt documents the results of a query against government-published sanctions lists. Compliance determinations remain the responsibility of the querying organization.",
     }
