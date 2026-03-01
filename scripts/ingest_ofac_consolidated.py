@@ -6,7 +6,6 @@ import hashlib
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 from dotenv import load_dotenv
-
 load_dotenv()
 
 CONSOLIDATED_URL = "https://sanctionslistservice.ofac.treas.gov/api/publicationpreview/exports/consolidated.xml"
@@ -27,26 +26,30 @@ def ingest_consolidated():
     raw_text = response.text
     content_hash = hashlib.sha256(raw_text.encode()).hexdigest()
     print(f"Downloaded {len(raw_text)} bytes | Hash: {content_hash[:16]}...")
-
     root = ET.fromstring(raw_text)
-    entries = root.findall(".//{*}sdnEntry")
-    print(f"Found {len(entries)} Consolidated entries")
+
+    # --- SDN entries ---
+    sdn_entries = root.findall(".//{*}sdnEntry")
+    print(f"Found {len(sdn_entries)} SDN entries in consolidated")
+
+    # --- SSI (nonSdn) entries ---
+    ssi_entries = root.findall(".//{*}nonSdnEntity")
+    print(f"Found {len(ssi_entries)} SSI entries in consolidated")
 
     conn = get_conn()
     cur = conn.cursor()
-    inserted = 0
 
-    for entry in entries:
+    # Insert SDN entries
+    sdn_inserted = 0
+    for entry in sdn_entries:
         def get(tag):
             el = entry.find(f"{{*}}{tag}")
             return el.text.strip() if el is not None and el.text else ""
-
         uid = get("uid")
         last_name = get("lastName")
         first_name = get("firstName")
         entity_type = get("sdnType")
         programs = [p.text.strip() for p in entry.findall(".//{*}program") if p.text]
-
         cur.execute("""
             INSERT INTO ofac_consolidated (uid, last_name, first_name, entity_type, programs, raw, ingested_at)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
@@ -57,13 +60,63 @@ def ingest_consolidated():
                 programs = EXCLUDED.programs,
                 raw = EXCLUDED.raw,
                 ingested_at = EXCLUDED.ingested_at
-        """, (uid, last_name, first_name, entity_type, programs, json.dumps({"uid": uid, "lastName": last_name, "firstName": first_name}), datetime.now(timezone.utc)))
-        inserted += 1
+        """, (uid, last_name, first_name, entity_type, programs, json.dumps({
+            "uid": uid,
+            "lastName": last_name,
+            "firstName": first_name
+        }), datetime.now(timezone.utc)))
+        sdn_inserted += 1
+
+    # Insert SSI entries
+    ssi_inserted = 0
+    for entry in ssi_entries:
+        def get(tag):
+            el = entry.find(f"{{*}}{tag}")
+            return el.text.strip() if el is not None and el.text else ""
+        uid = get("id")
+        last_name = get("lastName")
+        first_name = get("firstName")
+        entity_type = get("nonSdnType")
+        programs = [p.text.strip() for p in entry.findall(".//{*}program") if p.text]
+        cur.execute("""
+            INSERT INTO ofac_ssi (uid, last_name, first_name, entity_type, programs, raw, ingested_at)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            ON CONFLICT (uid) DO UPDATE SET
+                last_name = EXCLUDED.last_name,
+                first_name = EXCLUDED.first_name,
+                entity_type = EXCLUDED.entity_type,
+                programs = EXCLUDED.programs,
+                raw = EXCLUDED.raw,
+                ingested_at = EXCLUDED.ingested_at
+        """, (uid, last_name, first_name, entity_type, programs, json.dumps({
+            "uid": uid,
+            "lastName": last_name,
+            "firstName": first_name,
+            "nonSdnType": entity_type,
+            "programs": programs,
+            "aliases": [a.text.strip() for a in entry.findall(".//{*}aka") if a.text],
+            "addresses": [
+                {
+                    "address": el.findtext("{*}address1") or "",
+                    "city": el.findtext("{*}city") or "",
+                    "country": el.findtext("{*}country") or "",
+                }
+                for el in entry.findall(".//{*}address")
+            ],
+            "ids": [
+                {
+                    "idType": el.findtext("{*}idType") or "",
+                    "idNumber": el.findtext("{*}idNumber") or "",
+                }
+                for el in entry.findall(".//{*}id")
+            ],
+        }), datetime.now(timezone.utc)))
+        ssi_inserted += 1
 
     conn.commit()
     cur.close()
     conn.close()
-    print(f"Done. Inserted/updated: {inserted} entries")
+    print(f"Done. SDN inserted/updated: {sdn_inserted} | SSI inserted/updated: {ssi_inserted}")
 
 if __name__ == "__main__":
     ingest_consolidated()

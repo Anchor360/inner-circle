@@ -1129,7 +1129,8 @@ async def verify_ofac(request: OFACVerifyRequest):
             full_name = f"{row[2] or ''} {row[1]}".strip()
             score_full = fuzz.token_sort_ratio(entity_name.upper(), full_name.upper())
             score_last = fuzz.token_sort_ratio(entity_name.upper(), (row[1] or '').upper())
-            best_score = max(score_full, score_last)
+            score_partial = fuzz.partial_ratio(entity_name.upper(), full_name.upper())
+            best_score = max(score_full, score_last, score_partial)
             if best_score >= FUZZY_THRESHOLD:
                 codes = row[4] or []
                 if best_score == 100:
@@ -1248,7 +1249,9 @@ async def verify_bis(request: OFACVerifyRequest):
         FUZZY_THRESHOLD = 85
         bis_hits = []
         for row in candidates:
-            score = fuzz.token_sort_ratio(entity_name.upper(), (row[0] or '').upper())
+            score_full = fuzz.token_sort_ratio(entity_name.upper(), (row[0] or '').upper())
+            score_partial = fuzz.partial_ratio(entity_name.upper(), (row[0] or '').upper())
+            score = max(score_full, score_partial)
             if score >= FUZZY_THRESHOLD:
                 if score == 100:
                     mt = "exact"
@@ -1388,7 +1391,8 @@ async def verify_ofac_consolidated(request: OFACVerifyRequest):
             full_name = f"{row[2] or ''} {row[1]}".strip()
             score_full = fuzz.token_sort_ratio(entity_name.upper(), full_name.upper())
             score_last = fuzz.token_sort_ratio(entity_name.upper(), (row[1] or '').upper())
-            best_score = max(score_full, score_last)
+            score_partial = fuzz.partial_ratio(entity_name.upper(), full_name.upper())
+            best_score = max(score_full, score_last, score_partial)
             if best_score >= FUZZY_THRESHOLD:
                 codes = row[4] or []
                 if best_score == 100:
@@ -1478,6 +1482,144 @@ async def verify_ofac_consolidated(request: OFACVerifyRequest):
         "claim_id": claim_id,
         "verified_at": now.isoformat(),
         "source_url": "https://sanctionslistservice.ofac.treas.gov/api/publicationpreview/exports/consolidated.xml",
+        "compliance_disclaimer": "This receipt documents the results of a query against government-published sanctions lists. Compliance determinations remain the responsibility of the querying organization.",
+    }
+
+@app.post("/verify/ssi")
+async def verify_ssi(request: OFACVerifyRequest):
+    entity_name = request.entity_name.strip()
+    if not entity_name:
+        raise HTTPException(status_code=400, detail="entity_name is required")
+
+    ssi_match = False
+    ssi_detail = ""
+    ssi_hits = []
+    match_type = "none"
+
+    SSI_PROGRAMS = [
+        "UKRAINE-EO13662",
+        "CAATSA - RUSSIA",
+        "RUSSIA-EO14024",
+        "CMIC-EO13959",
+        "VENEZUELA-EO13850",
+    ]
+
+    try:
+        ssi_conn = get_conn()
+        ssi_cur = ssi_conn.cursor()
+        ssi_cur.execute("""
+            SELECT uid, last_name, first_name, entity_type, programs, raw
+            FROM ofac_consolidated
+            WHERE (
+                UPPER(last_name) LIKE %s
+                OR UPPER(first_name || ' ' || last_name) LIKE %s
+                OR UPPER(last_name || ' ' || first_name) LIKE %s
+            )
+            AND programs && %s::text[]
+            LIMIT 200
+        """, (
+            f"%{entity_name.upper()[:4]}%",
+            f"%{entity_name.upper()[:4]}%",
+            f"%{entity_name.upper()[:4]}%",
+            SSI_PROGRAMS,
+        ))
+        candidates = ssi_cur.fetchall()
+        ssi_cur.close()
+        ssi_conn.close()
+
+        FUZZY_THRESHOLD = 85
+        for row in candidates:
+            full_name = f"{row[2] or ''} {row[1]}".strip()
+            score_full = fuzz.token_sort_ratio(entity_name.upper(), full_name.upper())
+            score_last = fuzz.token_sort_ratio(entity_name.upper(), (row[1] or '').upper())
+            score_partial = fuzz.partial_ratio(entity_name.upper(), full_name.upper())
+            best_score = max(score_full, score_last, score_partial)
+            if best_score >= FUZZY_THRESHOLD:
+                codes = row[4] or []
+                if best_score == 100:
+                    mt = "exact"
+                elif best_score >= 95:
+                    mt = "partial"
+                else:
+                    mt = "fuzzy"
+                ssi_hits.append({
+                    "uid": row[0],
+                    "name": full_name,
+                    "entity_type": row[3],
+                    "program_codes": codes,
+                    "list_types": [PROGRAM_CODE_LABELS.get(c, c) for c in codes],
+                    "match_score": round(best_score / 100, 2),
+                    "match_type": mt,
+                    "raw_match_data": row[5],
+                })
+
+        ssi_hits.sort(key=lambda x: x["match_score"], reverse=True)
+        ssi_hits = ssi_hits[:10]
+
+        if ssi_hits:
+            ssi_match = True
+            match_type = ssi_hits[0]["match_type"]
+            ssi_detail = f"MATCH FOUND: {len(ssi_hits)} result(s) on OFAC Sectoral Sanctions (SSI) list"
+        else:
+            ssi_match = False
+            ssi_detail = "No match found on OFAC Sectoral Sanctions (SSI) list"
+
+    except Exception as e:
+        ssi_detail = f"SSI lookup error: {str(e)}"
+
+    conn = get_conn()
+    cur = conn.cursor()
+    try:
+        claim_id = str(uuid.uuid4())
+        event_id = str(uuid.uuid4())
+        now = datetime.now(timezone.utc)
+
+        cur.execute("""
+            INSERT INTO claims (claim_id, content, created_at)
+            VALUES (%s, %s, %s)
+        """, (claim_id, entity_name, now))
+
+        previous_hash = get_latest_event_hash(cur)
+        event_hash = compute_event_hash(
+            event_id=event_id,
+            event_type="ssi_verification",
+            aggregate_type="claim",
+            aggregate_id=claim_id,
+            actor_type="system",
+            actor_id="system",
+            payload={"entity": entity_name, "match": ssi_match, "detail": ssi_detail},
+            created_at=now.isoformat(),
+            previous_hash=previous_hash,
+        )
+
+        cur.execute("""
+            INSERT INTO events (event_id, event_type, aggregate_type, aggregate_id, actor_type, actor_id, payload, created_at, event_hash, previous_hash)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (event_id, "ssi_verification", "claim", claim_id, "system", "system", json.dumps({
+            "entity": entity_name,
+            "match": ssi_match,
+            "detail": ssi_detail
+        }), now, event_hash, previous_hash))
+
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+    finally:
+        cur.close()
+        conn.close()
+
+    return {
+        "entity": entity_name,
+        "ssi_match": ssi_match,
+        "match_type": match_type,
+        "detail": ssi_detail,
+        "hits": ssi_hits,
+        "sources_checked": ["OFAC Consolidated Sanctions List — SSI-designated programs (sanctionslistservice.ofac.treas.gov)"],
+        "claim_id": claim_id,
+        "verified_at": now.isoformat(),
+        "source_url": "https://sanctionslistservice.ofac.treas.gov/api/PublicationPreview/exports/CONSOLIDATED.XML",
+        "data_note": "SSI-designated entities are sourced from OFAC's Consolidated Sanctions List export. OFAC does not publish SSI as a standalone machine-readable file.",
         "compliance_disclaimer": "This receipt documents the results of a query against government-published sanctions lists. Compliance determinations remain the responsibility of the querying organization.",
     }
 
