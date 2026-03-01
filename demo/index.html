@@ -211,6 +211,7 @@
           <div class="source-pill"><div class="pill-dot"></div>OFAC SDN List<span class="pill-count">18,664 entries</span></div>
           <div class="source-pill"><div class="pill-dot"></div>BIS Denied Persons<span class="pill-count">1,941 entries</span></div>
           <div class="source-pill"><div class="pill-dot"></div>OFAC Consolidated<span class="pill-count">442 entries</span></div>
+          <div class="source-pill"><div class="pill-dot"></div>OFAC SSI (Sectoral)<span class="pill-count">286 entries</span></div>
         </div>
         <div class="search-wrap">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -244,14 +245,13 @@
         </div>
       </div>
 
-      <!-- Zone 3: Stats — dark -->
+     <!-- Zone 3: Stats — dark -->
       <div class="zone-stats">
-        <div class="stat"><span class="stat-num">21,047</span><span class="stat-label">Total Entries</span></div>
-        <div class="stat"><span class="stat-num">3</span><span class="stat-label">Gov. Sources</span></div>
+        <div class="stat"><span class="stat-num">21,333</span><span class="stat-label">Total Entries</span></div>
+        <div class="stat"><span class="stat-num">4</span><span class="stat-label">Gov. Sources</span></div>
         <div class="stat"><span class="stat-num">Multiple</span><span class="stat-label">Daily Updates</span></div>
         <div class="stat"><span class="stat-num">&lt;200ms</span><span class="stat-label">Avg. Response</span></div>
       </div>
-    </div>
 
     <!-- ═══ RIGHT ═══ -->
     <div class="right">
@@ -267,6 +267,7 @@
         <button class="tab-btn active" id="tab-0" onclick="showTab(0)"><span class="tab-dot" id="tdot-0"></span>OFAC SDN</button>
         <button class="tab-btn" id="tab-1" onclick="showTab(1)"><span class="tab-dot" id="tdot-1"></span>BIS Denied Persons</button>
         <button class="tab-btn" id="tab-2" onclick="showTab(2)"><span class="tab-dot" id="tdot-2"></span>OFAC Consolidated</button>
+        <button class="tab-btn" id="tab-3" onclick="showTab(3)"><span class="tab-dot" id="tdot-3"></span>OFAC SSI</button>
       </div>
 
       <!-- Zone 6: Receipt body -->
@@ -301,6 +302,7 @@
       { key:'ofac',             label:'OFAC SDN List',      endpoint:'/verify/ofac',              count:'18,664 entries', matchField:'ofac_match',              url:'sanctionslistservice.ofac.treas.gov', entries:'18,664', mono:'OFAC_SDN_LIST' },
       { key:'bis',              label:'BIS Denied Persons', endpoint:'/verify/bis',               count:'1,941 entries',  matchField:'bis_match',               url:'media.bis.gov',                       entries:'1,941',  mono:'BIS_DENIED_PERSONS' },
       { key:'ofac-consolidated',label:'OFAC Consolidated', endpoint:'/verify/ofac-consolidated', count:'442 entries',    matchField:'ofac_consolidated_match', url:'sanctionslistservice.ofac.treas.gov', entries:'442',    mono:'OFAC_CONSOLIDATED' },
+      { key:'ssi',              label:'OFAC SSI (Sectoral)', endpoint:'/verify/ssi',             count:'286 entries',    matchField:'ssi_match',               url:'sanctionslistservice.ofac.treas.gov', entries:'286',    mono:'OFAC_SSI_SECTORAL' },
     ];
     let activeTab = 0, lastResults = null, lastName = '';
 
