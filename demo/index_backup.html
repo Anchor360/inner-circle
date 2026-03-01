@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inner-Circle — Compliance Verification</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --white: #ffffff;
+      --zone-hero: #ffffff;
+      --zone-results: #f4f4f1;
+      --zone-stats-bg: #111110;
+      --zone-receipt-header: #fafaf8;
+      --zone-tabs: #f0f0ed;
+      --zone-receipt-body: #ffffff;
+      --zone-footer: #f8f8f6;
+      --border: #e8e8e4;
+      --border-dark: #2a2a28;
+      --text-primary: #111110; --text-secondary: #6b6b68; --text-tertiary: #9b9b97;
+      --accent: #1a1a1a; --accent-blue: #2563eb;
+      --match: #dc2626; --match-bg: #fef2f2; --match-border: #fecaca;
+      --clean: #16a34a; --clean-bg: #f0fdf4; --clean-border: #bbf7d0;
+    }
+    html, body { height: 100%; overflow: hidden; font-family: 'DM Sans', sans-serif; color: var(--text-primary); }
+    body { display: flex; flex-direction: column; }
+
+    /* NAV — pure white */
+    nav { height: 44px; flex-shrink: 0; background: var(--zone-hero); border-bottom: 1px solid var(--border); padding: 0 28px; display: flex; align-items: center; justify-content: space-between; }
+    .nav-brand { display: flex; align-items: center; gap: 9px; }
+    .nav-logo { width: 24px; height: 24px; background: var(--accent); border-radius: 5px; display: flex; align-items: center; justify-content: center; }
+    .nav-logo svg { width: 11px; height: 11px; fill: none; stroke: white; stroke-width: 2.5; stroke-linecap: round; }
+    .nav-product { font-size: 13px; font-weight: 600; letter-spacing: -0.01em; }
+    .nav-divider { width: 1px; height: 14px; background: var(--border); }
+    .nav-company { font-size: 11px; color: var(--text-tertiary); }
+    .nav-right { display: flex; align-items: center; gap: 14px; }
+    .nav-badge { font-size: 10px; font-weight: 500; color: var(--accent-blue); background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 20px; padding: 2px 9px; }
+    .nav-contact { font-size: 11px; color: var(--text-tertiary); text-decoration: none; }
+    .nav-contact:hover { color: var(--accent-blue); }
+
+    /* LAYOUT */
+    .layout { display: flex; flex: 1; overflow: hidden; }
+
+    /* ═══ LEFT PANEL ═══ */
+    .left { width: 50%; border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+
+    /* Zone 1: Hero + Search — white */
+    .zone-hero { background: var(--zone-hero); border-bottom: 2px solid var(--border); padding: 14px 24px 13px; flex-shrink: 0; }
+    .hero-title { font-size: 17px; font-weight: 600; letter-spacing: -0.03em; line-height: 1.2; margin-bottom: 3px; }
+    .hero-sub { font-size: 11px; color: var(--text-secondary); font-weight: 300; margin-bottom: 11px; }
+    .sources-label { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.09em; color: var(--text-tertiary); margin-bottom: 5px; }
+    .source-pills { display: flex; gap: 5px; margin-bottom: 11px; flex-wrap: wrap; }
+    .source-pill { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 500; padding: 3px 8px; border-radius: 5px; background: var(--zone-results); border: 1px solid var(--border); color: var(--text-secondary); }
+    .pill-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--clean); animation: pulse 2s ease infinite; }
+    .pill-count { font-size: 9px; color: var(--text-tertiary); font-weight: 400; }
+    .search-wrap { position: relative; margin-bottom: 7px; }
+    .search-wrap svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); width: 13px; height: 13px; color: var(--text-tertiary); pointer-events: none; }
+    input[type="text"] { width: 100%; height: 35px; padding: 0 11px 0 32px; border: 1px solid var(--border); border-radius: 7px; font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text-primary); background: var(--white); outline: none; transition: border-color 0.15s, box-shadow 0.15s; }
+    input[type="text"]::placeholder { color: var(--text-tertiary); }
+    input[type="text"]:focus { border-color: #aaa; box-shadow: 0 0 0 3px rgba(0,0,0,0.04); }
+    .btn-verify { width: 100%; height: 35px; background: var(--accent); color: white; border: none; border-radius: 7px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: opacity 0.15s; display: flex; align-items: center; justify-content: center; gap: 7px; }
+    .btn-verify:hover { opacity: 0.85; }
+    .btn-verify:disabled { opacity: 0.4; cursor: not-allowed; }
+    .spinner { width: 13px; height: 13px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.6s linear infinite; display: none; }
+    .loading .spinner { display: block; }
+    .loading .btn-text { display: none; }
+
+    /* Zone 2: Results / Legend — warm off-white */
+    .zone-results { background: var(--zone-results); flex: 1; overflow-y: auto; padding: 11px 24px; display: flex; flex-direction: column; gap: 10px; }
+
+    /* Legend */
+    .legend-title { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.09em; color: var(--text-tertiary); margin-bottom: 2px; }
+    .legend-sub { font-size: 11px; color: var(--text-tertiary); margin-bottom: 7px; }
+    .legend-table { border: 1px solid var(--border); border-radius: 7px; overflow: hidden; background: var(--white); }
+    .legend-row { display: flex; align-items: flex-start; gap: 8px; padding: 6px 11px; border-bottom: 1px solid var(--border); }
+    .legend-row:last-child { border-bottom: none; }
+    .legend-row:nth-child(even) { background: #fafaf8; }
+    .legend-key { font-family: 'DM Mono', monospace; font-size: 9.5px; color: var(--text-secondary); min-width: 105px; flex-shrink: 0; padding-top: 1px; }
+    .legend-desc { font-size: 10.5px; color: var(--text-tertiary); line-height: 1.4; }
+    .legend-notice { font-size: 9px; color: var(--text-tertiary); margin-top: 6px; text-align: center; }
+
+    /* Results post-search */
+    .result-header { border-radius: 7px 7px 0 0; padding: 9px 14px; border: 1px solid var(--border); border-bottom: none; display: flex; align-items: center; justify-content: space-between; }
+    .result-header.has-match { background: var(--match-bg); border-color: var(--match-border); }
+    .result-header.all-clean { background: var(--clean-bg); border-color: var(--clean-border); }
+    .result-header.pending { background: var(--white); }
+    .result-status { font-size: 12px; font-weight: 600; letter-spacing: -0.02em; }
+    .result-status.has-match { color: var(--match); }
+    .result-status.all-clean { color: var(--clean); }
+    .result-status.pending { color: var(--text-tertiary); }
+    .result-sub { font-size: 10px; color: var(--text-secondary); margin-top: 1px; }
+    .result-claim { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text-tertiary); }
+    .source-rows { border: 1px solid var(--border); border-top: none; overflow: hidden; background: var(--white); border-radius: 0 0 7px 7px; }
+    .source-row { display: flex; align-items: flex-start; padding: 8px 14px; border-bottom: 1px solid var(--border); gap: 10px; cursor: pointer; }
+    .source-row:hover { background: #fafaf9 !important; }
+    .source-row:nth-child(even) { background: #fafaf8; }
+    .source-row:last-child { border-bottom: none; }
+    .src-indicator { display: flex; align-items: center; gap: 6px; min-width: 175px; }
+    .src-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+    .src-dot.match { background: var(--match); }
+    .src-dot.clean { background: var(--clean); }
+    .src-dot.pending { background: #d1d5db; animation: pulse 1s ease infinite; }
+    .src-name { font-size: 11px; font-weight: 500; }
+    .src-count { font-size: 9px; color: var(--text-tertiary); }
+    .src-badge { font-size: 10px; font-weight: 500; padding: 2px 7px; border-radius: 20px; display: inline-flex; }
+    .src-badge.match { background: var(--match-bg); color: var(--match); border: 1px solid var(--match-border); }
+    .src-badge.clean { background: var(--clean-bg); color: var(--clean); border: 1px solid var(--clean-border); }
+    .src-badge.pending { background: #f9fafb; color: var(--text-tertiary); border: 1px solid var(--border); }
+    .mini-hits { margin-top: 5px; display: flex; flex-direction: column; gap: 3px; }
+    .mini-hit { background: #fef9f9; border: 1px solid var(--match-border); border-radius: 4px; padding: 4px 8px; }
+    .mini-hit-name { font-size: 10px; font-weight: 500; margin-bottom: 2px; }
+    .mini-tags { display: flex; gap: 3px; flex-wrap: wrap; }
+    .tag { font-size: 9px; padding: 1px 5px; border-radius: 3px; font-weight: 500; }
+    .tag.type { background: #f1f5f9; color: #475569; }
+    .tag.score-high { background: #fef2f2; color: var(--match); }
+    .tag.score-mid { background: #fffbeb; color: #d97706; }
+    .tag.prog { background: #f0fdf4; color: #15803d; }
+
+    /* Zone 3: Stats — DARK inverted */
+    .zone-stats { background: var(--zone-stats-bg); border-top: 1px solid var(--border-dark); display: flex; flex-shrink: 0; }
+    .stat { flex: 1; padding: 7px 10px; text-align: center; border-right: 1px solid var(--border-dark); }
+    .stat:last-child { border-right: none; }
+    .stat-num { font-size: 13px; font-weight: 600; letter-spacing: -0.02em; color: #ffffff; display: block; }
+    .stat-label { font-size: 9px; color: #555552; }
+
+    /* ═══ RIGHT PANEL ═══ */
+    .right { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+    /* Zone 4: Receipt header — slightly warm */
+    .zone-receipt-header { background: var(--zone-receipt-header); border-bottom: 1px solid var(--border); padding: 9px 22px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; }
+    .receipt-header-title { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.09em; color: var(--text-tertiary); }
+    .receipt-pill { font-size: 9px; font-weight: 500; padding: 2px 8px; border-radius: 20px; background: var(--zone-results); border: 1px solid var(--border); color: var(--text-tertiary); }
+    .receipt-pill.live { background: var(--clean-bg); border-color: var(--clean-border); color: var(--clean); }
+
+    /* Zone 5: Tabs — medium grey */
+    .zone-tabs { background: var(--zone-tabs); border-bottom: 1px solid var(--border); padding: 0 22px; display: flex; flex-shrink: 0; }
+    .tab-btn { font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 500; color: var(--text-tertiary); background: none; border: none; padding: 7px 12px; cursor: pointer; border-bottom: 2px solid transparent; transition: color 0.15s, border-color 0.15s; display: flex; align-items: center; gap: 5px; }
+    .tab-btn:hover { color: var(--text-secondary); }
+    .tab-btn.active { color: var(--text-primary); border-bottom-color: var(--accent); }
+    .tab-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--border); flex-shrink: 0; }
+    .tab-dot.match { background: var(--match); }
+    .tab-dot.clean { background: var(--clean); }
+
+    /* Zone 6: Receipt body — clean white */
+    .zone-receipt-body { background: var(--zone-receipt-body); flex: 1; overflow: hidden; padding: 13px 22px; display: flex; flex-direction: column; }
+
+    /* Receipt card */
+    .receipt-card { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; flex: 1; display: flex; flex-direction: column; min-height: 0; }
+    .receipt-card.r-match { border-color: var(--match-border); }
+    .receipt-card.r-clean { border-color: var(--clean-border); }
+    .rc-head { background: #f8f8f6; padding: 8px 13px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    .rc-head.r-match { background: var(--match-bg); border-color: var(--match-border); }
+    .rc-head.r-clean { background: var(--clean-bg); border-color: var(--clean-border); }
+    .rc-source-name { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text-secondary); letter-spacing: 0.02em; }
+    .rc-verdict { font-size: 9px; font-weight: 600; padding: 2px 7px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .rc-verdict.match { background: var(--match); color: white; }
+    .rc-verdict.clean { background: var(--clean); color: white; }
+    .rc-verdict.sample { background: var(--border); color: var(--text-tertiary); }
+    .rc-fields { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+    .rc-row { display: flex; border-bottom: 1px solid var(--border); flex: 1; min-height: 0; }
+    .rc-row:last-child { border-bottom: none; }
+    .rc-row:nth-child(odd) { background: #fafaf8; }
+    .rc-row:nth-child(even) { background: var(--white); }
+    .rc-key { width: 128px; flex-shrink: 0; padding: 0 11px; font-family: 'DM Mono', monospace; font-size: 9.5px; color: var(--text-tertiary); border-right: 1px solid var(--border); display: flex; align-items: center; }
+    .rc-val { flex: 1; padding: 0 11px; font-size: 10.5px; color: var(--text-primary); font-family: 'DM Mono', monospace; line-height: 1.4; word-break: break-all; display: flex; align-items: center; }
+    .rc-val a { color: var(--accent-blue); text-decoration: none; }
+    .rc-val a:hover { text-decoration: underline; }
+    .rc-val.v-match { color: var(--match); font-weight: 500; }
+    .rc-val.v-clean { color: var(--clean); font-weight: 500; }
+    .receipt-notice { margin-top: 9px; font-size: 9.5px; color: var(--text-tertiary); line-height: 1.55; font-family: 'DM Sans', sans-serif; flex-shrink: 0; }
+
+    /* Zone 7: Footer — off-white */
+    footer { height: 32px; flex-shrink: 0; background: var(--zone-footer); border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 28px; }
+    .footer-left { font-size: 10px; color: var(--text-tertiary); }
+    .footer-right { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--text-tertiary); }
+    .live-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--clean); animation: pulse 2s ease infinite; }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="nav-brand">
+      <div class="nav-logo"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 3"/></svg></div>
+      <span class="nav-product">Inner-Circle</span>
+      <div class="nav-divider"></div>
+      <span class="nav-company">Axiom-Infra</span>
+    </div>
+    <div class="nav-right">
+      <a href="mailto:info@axiominfra.io" class="nav-contact">info@axiominfra.io</a>
+      <span class="nav-badge">LIVE</span>
+    </div>
+  </nav>
+
+  <div class="layout">
+
+    <!-- ═══ LEFT ═══ -->
+    <div class="left">
+
+      <!-- Zone 1: Hero + Search -->
+      <div class="zone-hero">
+        <h1 class="hero-title">Sanctions Screening.<br>Cryptographically Proven.</h1>
+        <p class="hero-sub">Verified against live government sources. Every check returns a tamper-evident receipt.</p>
+        <div class="sources-label">Sources checked on every query</div>
+        <div class="source-pills">
+          <div class="source-pill"><div class="pill-dot"></div>OFAC SDN List<span class="pill-count">18,664 entries</span></div>
+          <div class="source-pill"><div class="pill-dot"></div>BIS Denied Persons<span class="pill-count">1,941 entries</span></div>
+          <div class="source-pill"><div class="pill-dot"></div>OFAC Consolidated<span class="pill-count">442 entries</span></div>
+          <div class="source-pill"><div class="pill-dot"></div>OFAC SSI (Sectoral)<span class="pill-count">286 entries</span></div>
+        </div>
+        <div class="search-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" id="entityInput" placeholder="Try 'Bin Ladin' or 'John Smith'" autocomplete="off" />
+        </div>
+        <button class="btn-verify" id="verifyBtn" onclick="runAll()">
+          <div class="spinner"></div>
+          <span class="btn-text">⚡ Verify All Sources</span>
+        </button>
+      </div>
+
+      <!-- Zone 2: Results / Legend -->
+      <div class="zone-results">
+        <div id="legendView">
+          <div class="legend-title">Receipt Field Guide</div>
+          <div class="legend-sub">Every verification returns these fields — here's what they mean.</div>
+          <div class="legend-table">
+            <div class="legend-row"><span class="legend-key">claim_id</span><span class="legend-desc">Unique fingerprint for this check. Your retrievable proof of due diligence.</span></div>
+            <div class="legend-row"><span class="legend-key">verified_at</span><span class="legend-desc">Exact UTC timestamp the live government source was queried — not a cached result.</span></div>
+            <div class="legend-row"><span class="legend-key">source</span><span class="legend-desc">Authoritative government list checked. OFAC SDN = US Treasury. BIS DPL = Dept. of Commerce.</span></div>
+            <div class="legend-row"><span class="legend-key">source_url</span><span class="legend-desc">Direct link to the government database. Examiners can independently verify the source.</span></div>
+            <div class="legend-row"><span class="legend-key">result</span><span class="legend-desc">MATCH or NO_MATCH against this source at this exact moment in time.</span></div>
+            <div class="legend-row"><span class="legend-key">match_score</span><span class="legend-desc">100% = exact. 85–99% = fuzzy — catches misspellings and name variations.</span></div>
+            <div class="legend-row"><span class="legend-key">content_hash</span><span class="legend-desc">SHA-256 of the list version checked. Proves exactly which version was in use.</span></div>
+          </div>
+          <div class="legend-notice">OFAC requires 5-year recordkeeping · 31 CFR Part 501</div>
+        </div>
+        <div id="resultsView" style="display:none; flex-direction:column; flex:1;">
+          <div id="errorArea"></div>
+          <div id="allResult"></div>
+        </div>
+      </div>
+
+     <!-- Zone 3: Stats — dark -->
+      <div class="zone-stats">
+        <div class="stat"><span class="stat-num">21,333</span><span class="stat-label">Total Entries</span></div>
+        <div class="stat"><span class="stat-num">4</span><span class="stat-label">Gov. Sources</span></div>
+        <div class="stat"><span class="stat-num">Multiple</span><span class="stat-label">Daily Updates</span></div>
+        <div class="stat"><span class="stat-num">&lt;200ms</span><span class="stat-label">Avg. Response</span></div>
+      </div>
+
+    <!-- ═══ RIGHT ═══ -->
+    <div class="right">
+
+      <!-- Zone 4: Receipt header -->
+      <div class="zone-receipt-header">
+        <span class="receipt-header-title">Verification Receipt</span>
+        <span class="receipt-pill" id="receiptPill">Run a query to generate</span>
+      </div>
+
+      <!-- Zone 5: Tabs -->
+      <div class="zone-tabs">
+        <button class="tab-btn active" id="tab-0" onclick="showTab(0)"><span class="tab-dot" id="tdot-0"></span>OFAC SDN</button>
+        <button class="tab-btn" id="tab-1" onclick="showTab(1)"><span class="tab-dot" id="tdot-1"></span>BIS Denied Persons</button>
+        <button class="tab-btn" id="tab-2" onclick="showTab(2)"><span class="tab-dot" id="tdot-2"></span>OFAC Consolidated</button>
+        <button class="tab-btn" id="tab-3" onclick="showTab(3)"><span class="tab-dot" id="tdot-3"></span>OFAC SSI</button>
+      </div>
+
+      <!-- Zone 6: Receipt body -->
+      <div class="zone-receipt-body" id="receiptBody">
+        <div class="receipt-card" style="opacity:0.3; pointer-events:none;">
+          <div class="rc-head"><span class="rc-source-name">OFAC_SDN_LIST</span><span class="rc-verdict sample">SAMPLE</span></div>
+          <div class="rc-fields">
+            <div class="rc-row"><div class="rc-key">claim_id</div><div class="rc-val">a3f9c2b1-7e4d-4a8f-…</div></div>
+            <div class="rc-row"><div class="rc-key">entity_queried</div><div class="rc-val">John Smith</div></div>
+            <div class="rc-row"><div class="rc-key">verified_at</div><div class="rc-val">Feb 27, 2026 · 14:32 UTC</div></div>
+            <div class="rc-row"><div class="rc-key">source</div><div class="rc-val">OFAC SDN List</div></div>
+            <div class="rc-row"><div class="rc-key">source_url</div><div class="rc-val">sanctionslistservice.ofac.treas.gov</div></div>
+            <div class="rc-row"><div class="rc-key">entries_checked</div><div class="rc-val">18,664</div></div>
+            <div class="rc-row"><div class="rc-key">result</div><div class="rc-val">NO_MATCH</div></div>
+            <div class="rc-row"><div class="rc-key">detail</div><div class="rc-val">No match found on OFAC SDN list</div></div>
+          </div>
+        </div>
+        <div class="receipt-notice" style="opacity:0.3;">Inner-Circle provides custody of verification records, not legal compliance advice. Your compliance team determines appropriate action. OFAC requires 5-year recordkeeping under 31 CFR Part 501.</div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <span class="footer-left">Inner-Circle by Axiom-Infra &nbsp;·&nbsp; Compliance Verification Infrastructure</span>
+    <div class="footer-right"><div class="live-dot"></div>All sources live &nbsp;·&nbsp; Updated multiple times daily</div>
+  </footer>
+
+  <script>
+    const API_BASE = 'https://mic-api.onrender.com';
+    const API_KEY  = 'INF-2026-DEMO-001';
+    const SOURCES = [
+      { key:'ofac',             label:'OFAC SDN List',      endpoint:'/verify/ofac',              count:'18,664 entries', matchField:'ofac_match',              url:'sanctionslistservice.ofac.treas.gov', entries:'18,664', mono:'OFAC_SDN_LIST' },
+      { key:'bis',              label:'BIS Denied Persons', endpoint:'/verify/bis',               count:'1,941 entries',  matchField:'bis_match',               url:'media.bis.gov',                       entries:'1,941',  mono:'BIS_DENIED_PERSONS' },
+      { key:'ofac-consolidated',label:'OFAC Consolidated', endpoint:'/verify/ofac-consolidated', count:'442 entries',    matchField:'ofac_consolidated_match', url:'sanctionslistservice.ofac.treas.gov', entries:'442',    mono:'OFAC_CONSOLIDATED' },
+      { key:'ssi',              label:'OFAC SSI (Sectoral)', endpoint:'/verify/ssi',             count:'286 entries',    matchField:'ssi_match',               url:'sanctionslistservice.ofac.treas.gov', entries:'286',    mono:'OFAC_SSI_SECTORAL' },
+    ];
+    let activeTab = 0, lastResults = null, lastName = '';
+
+    document.getElementById('entityInput').addEventListener('keydown', e => { if (e.key === 'Enter') runAll(); });
+
+    function fmt(ts) {
+      if (!ts) return '—';
+      return new Date(ts).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit',timeZoneName:'short'});
+    }
+    function scoreClass(s) { return s >= 0.99 ? 'score-high' : s >= 0.85 ? 'score-mid' : 'type'; }
+
+    function showTab(idx) {
+      activeTab = idx;
+      document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', i===idx));
+      if (lastResults) renderReceipt(lastResults[idx], lastName);
+    }
+
+    function renderReceipt(r, name) {
+      const s = r.source;
+      const isMatch = r.data && r.data[s.matchField];
+      const hits = r.data?.hits || [];
+      const verifiedAt = r.data?.verified_at;
+      const claimId = r.data?.claim_id || '—';
+
+
+      const cardClass = r.error ? '' : isMatch ? 'r-match' : 'r-clean';
+      const headClass = r.error ? '' : isMatch ? 'r-match' : 'r-clean';
+      const verdictClass = r.error ? 'sample' : isMatch ? 'match' : 'clean';
+      const verdictText = r.error ? 'ERROR' : isMatch ? 'MATCH' : 'NO MATCH';
+
+      let extraRows = '';
+      if (isMatch && hits.length > 0) {
+        const h = hits[0];
+        const score = h.match_score !== undefined ? h.match_score : 1;
+        const mName = h.name || ((h.last_name||'')+(h.first_name?', '+h.first_name:''));
+        extraRows += `<div class="rc-row"><div class="rc-key">matched_name</div><div class="rc-val v-match">${mName}</div></div>`;
+        extraRows += `<div class="rc-row"><div class="rc-key">match_score</div><div class="rc-val v-match">${Math.round(score*100)}%</div></div>`;
+        if (h.entity_type) extraRows += `<div class="rc-row"><div class="rc-key">entity_type</div><div class="rc-val">${h.entity_type}</div></div>`;
+        if ((h.program_codes||[]).length) extraRows += `<div class="rc-row"><div class="rc-key">programs</div><div class="rc-val">${h.program_codes.join(', ')}</div></div>`;
+      }
+      const resultValClass = r.error ? '' : isMatch ? 'v-match' : 'v-clean';
+      const resultText = r.error ? 'ERROR' : isMatch ? 'MATCH' : 'NO_MATCH';
+
+      document.getElementById('receiptBody').innerHTML = `
+        <div class="receipt-card ${cardClass}" style="animation:fadeUp 0.2s ease">
+          <div class="rc-head ${headClass}">
+            <span class="rc-source-name">${s.mono}</span>
+            <span class="rc-verdict ${verdictClass}">${verdictText}</span>
+          </div>
+          <div class="rc-fields">
+            <div class="rc-row"><div class="rc-key">claim_id</div><div class="rc-val">${String(claimId).slice(0,26)}${claimId.length>26?'…':''}</div></div>
+            <div class="rc-row"><div class="rc-key">entity_queried</div><div class="rc-val">${name}</div></div>
+            <div class="rc-row"><div class="rc-key">verified_at</div><div class="rc-val">${fmt(verifiedAt)}</div></div>
+            <div class="rc-row"><div class="rc-key">source</div><div class="rc-val">${s.label}</div></div>
+            <div class="rc-row"><div class="rc-key">source_url</div><div class="rc-val"><a href="https://${s.url}" target="_blank">${s.url}</a></div></div>
+            <div class="rc-row"><div class="rc-key">entries_checked</div><div class="rc-val">${s.entries}</div></div>
+            <div class="rc-row"><div class="rc-key">result</div><div class="rc-val ${resultValClass}">${resultText}</div></div>
+            ${extraRows}
+            ${r.data?.detail ? `<div class="rc-row"><div class="rc-key">detail</div><div class="rc-val">${r.data.detail}</div></div>` : ''}
+          </div>
+        </div>
+        <div class="receipt-notice">Inner-Circle provides custody of verification records, not legal compliance advice. Your compliance team determines appropriate action. OFAC requires 5-year recordkeeping under 31 CFR Part 501.</div>`;
+    }
+
+    async function runAll() {
+      const name = document.getElementById('entityInput').value.trim();
+      if (!name) return;
+      document.getElementById('resultsView').style.display = 'block';
+      document.getElementById('errorArea').innerHTML = '';
+
+      const btn = document.getElementById('verifyBtn');
+      btn.disabled = true; btn.classList.add('loading');
+
+      const pill = document.getElementById('receiptPill');
+      pill.textContent = 'Generating…'; pill.className = 'receipt-pill';
+
+      document.getElementById('allResult').innerHTML = buildSkeleton(name);
+      document.getElementById('receiptBody').innerHTML = `<div style="flex:1;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--text-tertiary);">Querying government sources…</div>`;
+
+      const promises = SOURCES.map(s =>
+        fetch(`${API_BASE}${s.endpoint}`, {
+          method:'POST',
+          headers:{'Content-Type':'application/json','X-Api-Key':API_KEY},
+          body: JSON.stringify({entity_name:name})
+        }).then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+          .then(data => ({source:s,data,error:null}))
+          .catch(err => ({source:s,data:null,error:err.message}))
+      );
+
+      const results = await Promise.all(promises);
+      lastResults = results; lastName = name;
+      btn.disabled = false; btn.classList.remove('loading');
+
+      results.forEach((r,i) => {
+        const isMatch = r.data && r.data[r.source.matchField];
+        document.getElementById(`tdot-${i}`).className = 'tab-dot '+(r.error?'':isMatch?'match':'clean');
+      });
+
+      pill.textContent = 'Live receipt'; pill.className = 'receipt-pill live';
+      renderLeftResults(name, results);
+      renderReceipt(results[activeTab], name);
+    }
+
+    function buildSkeleton(name) {
+      const rows = SOURCES.map(s => `
+        <div class="source-row">
+          <div class="src-indicator"><div class="src-dot pending"></div><div><div class="src-name">${s.label}</div><div class="src-count">${s.count}</div></div></div>
+          <span class="src-badge pending">Checking…</span>
+        </div>`).join('');
+      return `<div style="animation:fadeUp 0.2s ease">
+        <div class="result-header pending"><div><div class="result-status pending">Verifying "${name}"…</div><div class="result-sub">Checking all three sources simultaneously</div></div></div>
+        <div class="source-rows">${rows}</div>
+      </div>`;
+    }
+
+    function renderLeftResults(name, results) {
+      const anyMatch = results.some(r => r.data && r.data[r.source.matchField]);
+      const totalHits = results.reduce((sum,r) => sum+(r.data?.hits?.length||0), 0);
+      const hClass = anyMatch ? 'has-match' : 'all-clean';
+      const sClass = anyMatch ? 'has-match' : 'all-clean';
+      const statusText = anyMatch
+        ? `Match found — ${totalHits} result${totalHits!==1?'s':''} across sources`
+        : `Cleared — no match across all ${SOURCES.length} sources`;
+      const verifiedAt = results.find(r => r.data?.verified_at)?.data?.verified_at;
+      const claimIds = results.filter(r => r.data?.claim_id).map(r => r.data.claim_id.slice(0,8)+'…');
+
+      const rows = results.map((r,i) => {
+        const isMatch = r.data && r.data[r.source.matchField];
+        const hits = r.data?.hits || [];
+        const dotC = r.error?'pending':isMatch?'match':'clean';
+        const badgeC = r.error?'pending':isMatch?'match':'clean';
+        const badgeT = r.error?'Error':isMatch?`${hits.length} match${hits.length!==1?'es':''}`:'Clear';
+        let hitsHTML = '';
+        if (isMatch && hits.length > 0) {
+          hitsHTML = `<div class="mini-hits">${hits.slice(0,2).map(h => {
+            const score = h.match_score!==undefined?h.match_score:1;
+            const progs = (h.program_codes||[]).join(', ');
+            return `<div class="mini-hit"><div class="mini-hit-name">${h.name||(h.last_name+(h.first_name?', '+h.first_name:''))}</div><div class="mini-tags"><span class="tag type">${h.entity_type||'Entity'}</span><span class="tag ${scoreClass(score)}">Match ${Math.round(score*100)}%</span>${progs?`<span class="tag prog">${progs}</span>`:''}</div></div>`;
+          }).join('')}</div>`;
+        }
+        return `<div class="source-row" onclick="showTab(${i})">
+          <div class="src-indicator"><div class="src-dot ${dotC}"></div><div><div class="src-name">${r.source.label}</div><div class="src-count">${r.source.count}</div></div></div>
+          <div><span class="src-badge ${badgeC}">${badgeT}</span>${hitsHTML}</div>
+        </div>`;
+      }).join('');
+
+      document.getElementById('allResult').innerHTML = `<div style="animation:fadeUp 0.2s ease">
+        <div class="result-header ${hClass}">
+          <div><div class="result-status ${sClass}">${statusText}</div><div class="result-sub">Queried: "${name}" · ${fmt(verifiedAt)}</div></div>
+          ${claimIds.length?`<div class="result-claim">${claimIds.join(' · ')}</div>`:''}
+        </div>
+        <div class="source-rows">${rows}</div>
+      </div>`;
+    }
+  </script>
+</body>
+</html>
