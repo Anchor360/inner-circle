@@ -1217,7 +1217,7 @@ async def verify_ofac(request: OFACVerifyRequest):
             aggregate_id=claim_id,
             actor_type="system",
             actor_id="system",
-            payload={"entity": entity_name, "match": ofac_match, "detail": ofac_detail},
+            payload={"entity": entity_name, "match": ofac_match, "detail": ofac_detail, "data_version": sdn_version},
             created_at=now.isoformat(),
             previous_hash=previous_hash,
         )
@@ -1228,7 +1228,8 @@ async def verify_ofac(request: OFACVerifyRequest):
         """, (event_id, "ofac_verification", "claim", claim_id, "system", "system", json.dumps({
             "entity": entity_name,
             "match": ofac_match,
-            "detail": ofac_detail
+            "detail": ofac_detail,
+            "data_version": sdn_version
         }), now, event_hash, previous_hash))
 
         conn.commit()
@@ -1334,7 +1335,7 @@ async def verify_bis(request: OFACVerifyRequest):
             aggregate_id=claim_id,
             actor_type="system",
             actor_id="system",
-            payload={"entity": entity_name, "match": bis_match, "detail": bis_detail},
+            payload={"entity": entity_name, "match": bis_match, "detail": bis_detail, "data_version": bis_version},
             created_at=now.isoformat(),
             previous_hash=previous_hash,
         )
@@ -1345,7 +1346,8 @@ async def verify_bis(request: OFACVerifyRequest):
         """, (event_id, "bis_dpl_verification", "claim", claim_id, "system", "system", json.dumps({
             "entity": entity_name,
             "match": bis_match,
-            "detail": bis_detail
+            "detail": bis_detail,
+            "data_version": bis_version
         }), now, event_hash, previous_hash))
 
         conn.commit()
@@ -1481,7 +1483,7 @@ async def verify_ofac_consolidated(request: OFACVerifyRequest):
             aggregate_id=claim_id,
             actor_type="system",
             actor_id="system",
-            payload={"entity": entity_name, "match": con_match, "detail": con_detail},
+            payload={"entity": entity_name, "match": con_match, "detail": con_detail, "data_version": con_version},
             created_at=now.isoformat(),
             previous_hash=previous_hash,
         )
@@ -1492,7 +1494,8 @@ async def verify_ofac_consolidated(request: OFACVerifyRequest):
         """, (event_id, "ofac_consolidated_verification", "claim", claim_id, "system", "system", json.dumps({
             "entity": entity_name,
             "match": con_match,
-            "detail": con_detail
+            "detail": con_detail,
+            "data_version": con_version
         }), now, event_hash, previous_hash))
         conn.commit()
 
@@ -1622,7 +1625,7 @@ async def verify_ssi(request: OFACVerifyRequest):
             aggregate_id=claim_id,
             actor_type="system",
             actor_id="system",
-            payload={"entity": entity_name, "match": ssi_match, "detail": ssi_detail},
+            payload={"entity": entity_name, "match": ssi_match, "detail": ssi_detail, "data_version": ssi_version},
             created_at=now.isoformat(),
             previous_hash=previous_hash,
         )
@@ -1633,7 +1636,8 @@ async def verify_ssi(request: OFACVerifyRequest):
         """, (event_id, "ssi_verification", "claim", claim_id, "system", "system", json.dumps({
             "entity": entity_name,
             "match": ssi_match,
-            "detail": ssi_detail
+            "detail": ssi_detail,
+            "data_version": ssi_version
         }), now, event_hash, previous_hash))
 
         conn.commit()
@@ -1657,6 +1661,70 @@ async def verify_ssi(request: OFACVerifyRequest):
         "data_version": ssi_version,
         "data_note": "SSI-designated entities are sourced from OFAC's Consolidated Sanctions List export. OFAC does not publish SSI as a standalone machine-readable file.",
         "compliance_disclaimer": "This receipt documents the results of a query against government-published sanctions lists. Compliance determinations remain the responsibility of the querying organization.",
+    }
+
+@app.get("/receipt/{claim_id}")
+async def get_receipt(claim_id: str):
+    conn = get_conn()
+    cur = conn.cursor()
+    try:
+        # Get the claim
+        cur.execute("""
+            SELECT claim_id, content, created_at
+            FROM claims
+            WHERE claim_id = %s
+        """, (claim_id,))
+        claim = cur.fetchone()
+        if not claim:
+            raise HTTPException(status_code=404, detail="Receipt not found")
+
+        # Get the event
+        cur.execute("""
+            SELECT event_id, event_type, payload, created_at, event_hash, previous_hash
+            FROM events
+            WHERE aggregate_id = %s
+            ORDER BY created_at ASC
+            LIMIT 1
+        """, (claim_id,))
+        event = cur.fetchone()
+        if not event:
+            raise HTTPException(status_code=404, detail="Event record not found")
+
+        event_type = event[1]
+        payload = event[2]
+        verified_at = event[3]
+        event_hash = event[4]
+        previous_hash = event[5]
+
+        # Map event type to source name
+        source_map = {
+            "ofac_sdn_verification": "ofac_sdn",
+            "bis_dpl_verification": "bis_dpl",
+            "ofac_consolidated_verification": "ofac_consolidated",
+            "ssi_verification": "ofac_consolidated",
+        }
+        source_name = source_map.get(event_type, event_type)
+        data_version = payload.get("data_version") or get_active_ingestion_version(source_name, verified_at)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+    finally:
+        cur.close()
+        conn.close()
+
+    return {
+        "claim_id": claim_id,
+        "entity_queried": claim[1],
+        "event_type": event_type,
+        "verified_at": verified_at.isoformat(),
+        "payload": payload,
+        "event_hash": event_hash,
+        "previous_hash": previous_hash,
+        "data_version": data_version,
+        "retrieved_at": datetime.now(timezone.utc).isoformat(),
+        "note": "This receipt was retrieved from the Inner-Circle audit ledger. The event_hash cryptographically links this record to the data version active at verification time.",
     }
 
 @app.get("/health")
