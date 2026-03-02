@@ -87,6 +87,23 @@ services:
     depends_on:
       - postgres
 
+  scheduler-monitor:
+    build: .
+    container_name: mic-scheduler-monitor
+    restart: always
+    command: python scripts/scheduler_monitor.py
+    env_file:
+      - .env
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: mic
+      DB_USER: mic_app
+      DB_PASSWORD: mic_app_pass
+      MONITOR_INTERVAL_SECONDS: 3600
+    depends_on:
+      - postgres
+
 volumes:
   postgres_data:
   redis_data:
