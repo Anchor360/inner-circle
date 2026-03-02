@@ -24,421 +24,346 @@
       --accent: #1a3a8f;
     }
 
+    html, body {
+      height: 100%;
+      overflow: hidden;
+    }
+
     body {
       font-family: 'IBM Plex Sans', sans-serif;
       background: var(--bg);
       color: var(--text);
-      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
 
     /* NAV */
     nav {
       background: var(--white);
       border-bottom: 1px solid var(--border);
-      padding: 0 32px;
-      height: 48px;
+      padding: 0 24px;
+      height: 44px;
+      min-height: 44px;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      flex-shrink: 0;
     }
-    .nav-left { display: flex; align-items: center; gap: 12px; }
+    .nav-left { display: flex; align-items: center; gap: 10px; }
     .nav-mark {
-      width: 28px; height: 28px;
-      background: var(--black);
-      border-radius: 6px;
+      width: 26px; height: 26px;
+      background: var(--black); border-radius: 6px;
       display: flex; align-items: center; justify-content: center;
     }
-    .nav-mark svg { width: 14px; height: 14px; stroke: white; fill: none; stroke-width: 2; stroke-linecap: round; }
+    .nav-mark svg { width: 13px; height: 13px; stroke: white; fill: none; stroke-width: 2; stroke-linecap: round; }
     .nav-name { font-size: 13px; font-weight: 600; letter-spacing: -0.01em; }
-    .nav-sep { width: 1px; height: 16px; background: var(--border); }
+    .nav-sep { width: 1px; height: 14px; background: var(--border); }
     .nav-co { font-size: 11px; color: var(--muted); }
-    .nav-right { display: flex; align-items: center; gap: 16px; }
+    .nav-right { display: flex; align-items: center; gap: 14px; }
     .nav-live {
       font-size: 10px; font-weight: 500;
-      color: var(--clean);
-      background: var(--clean-bg);
-      border: 1px solid #b2dfc5;
-      border-radius: 20px;
-      padding: 3px 10px;
-      display: flex; align-items: center; gap: 5px;
+      color: var(--clean); background: var(--clean-bg);
+      border: 1px solid #b2dfc5; border-radius: 20px;
+      padding: 3px 9px; display: flex; align-items: center; gap: 5px;
     }
     .live-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--clean); animation: pulse 2s ease infinite; }
     .nav-email { font-size: 11px; color: var(--muted); text-decoration: none; }
     .nav-email:hover { color: var(--accent); }
 
-    /* HERO */
-    .hero {
+    /* TWO PANEL LAYOUT */
+    .panels {
+      display: grid;
+      grid-template-columns: 3fr 2fr;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* LEFT — WORKSPACE */
+    .panel-left {
       background: var(--white);
+      border-right: 2px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .workspace-head {
+      padding: 16px 24px 14px;
       border-bottom: 1px solid var(--border);
-      padding: 32px 32px 28px;
+      flex-shrink: 0;
     }
     .hero-eyebrow {
       font-family: 'IBM Plex Mono', monospace;
-      font-size: 10px;
-      color: var(--muted);
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      margin-bottom: 10px;
+      font-size: 9px; color: var(--muted);
+      letter-spacing: 0.1em; text-transform: uppercase;
+      margin-bottom: 5px;
     }
-    .hero h1 {
-      font-size: 26px;
-      font-weight: 600;
-      letter-spacing: -0.03em;
-      line-height: 1.15;
-      margin-bottom: 8px;
+    .workspace-head h1 {
+      font-size: 20px; font-weight: 600;
+      letter-spacing: -0.03em; line-height: 1.15;
+      margin-bottom: 4px;
     }
     .hero-sub {
-      font-size: 13px;
-      color: var(--muted);
-      font-weight: 300;
-      margin-bottom: 24px;
-      max-width: 540px;
-      line-height: 1.5;
+      font-size: 11px; color: var(--muted);
+      font-weight: 300; margin-bottom: 10px; line-height: 1.45;
     }
-
-    /* SOURCE PILLS */
-    .sources-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-bottom: 24px;
-    }
+    .sources-row { display: flex; flex-wrap: wrap; gap: 5px; }
     .src-pill {
-      display: flex; align-items: center; gap: 6px;
-      font-size: 11px; font-weight: 500;
-      padding: 4px 10px;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      background: var(--bg);
-      color: var(--text);
+      display: flex; align-items: center; gap: 5px;
+      font-size: 10px; font-weight: 500;
+      padding: 3px 9px;
+      border: 1px solid var(--border); border-radius: 6px;
+      background: var(--bg); color: var(--text);
     }
     .src-pill-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--clean); animation: pulse 2.5s ease infinite; }
-    .src-pill-count { font-size: 10px; color: var(--muted); font-weight: 400; }
+    .src-pill-count { font-size: 9px; color: var(--muted); font-weight: 400; }
 
-    /* SEARCH */
-    .search-row { display: flex; gap: 8px; max-width: 600px; }
+    /* ACTION BLOCKS */
+    .action-block {
+      padding: 14px 24px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .action-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 9px; text-transform: uppercase;
+      letter-spacing: 0.1em; color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .search-row { display: flex; gap: 8px; }
     .search-box {
-      flex: 1;
-      height: 40px;
-      border: 1px solid var(--border);
-      border-radius: 7px;
-      background: var(--white);
-      padding: 0 14px;
+      flex: 1; height: 38px;
+      border: 1px solid var(--border); border-radius: 7px;
+      background: var(--bg); padding: 0 13px;
       font-family: 'IBM Plex Sans', sans-serif;
-      font-size: 13px;
-      color: var(--text);
-      outline: none;
-      transition: border-color 0.15s;
+      font-size: 13px; color: var(--text);
+      outline: none; transition: border-color 0.15s;
     }
     .search-box::placeholder { color: var(--faint); }
-    .search-box:focus { border-color: var(--black); }
+    .search-box:focus { border-color: var(--black); background: var(--white); }
+
     .btn-verify {
-      height: 40px;
-      padding: 0 20px;
-      background: var(--black);
-      color: white;
-      border: none;
-      border-radius: 7px;
+      height: 38px; padding: 0 18px;
+      background: var(--black); color: white;
+      border: none; border-radius: 7px;
       font-family: 'IBM Plex Sans', sans-serif;
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      white-space: nowrap;
+      font-size: 12px; font-weight: 500;
+      cursor: pointer; white-space: nowrap;
       transition: opacity 0.15s;
       display: flex; align-items: center; gap: 7px;
     }
     .btn-verify:hover { opacity: 0.85; }
     .btn-verify:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .btn-retrieve {
+      height: 38px; padding: 0 18px;
+      background: var(--white); color: var(--black);
+      border: 1px solid var(--border); border-radius: 7px;
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 12px; font-weight: 500;
+      cursor: pointer; white-space: nowrap;
+      transition: all 0.15s;
+      display: flex; align-items: center; gap: 7px;
+    }
+    .btn-retrieve:hover { border-color: var(--black); background: var(--bg); }
+    .btn-retrieve:disabled { opacity: 0.4; cursor: not-allowed; }
+
     .spinner {
-      width: 12px; height: 12px;
+      width: 11px; height: 11px;
       border: 2px solid rgba(255,255,255,0.3);
-      border-top-color: white;
-      border-radius: 50%;
-      animation: spin 0.6s linear infinite;
-      display: none;
+      border-top-color: white; border-radius: 50%;
+      animation: spin 0.6s linear infinite; display: none;
+    }
+    .spinner-dark {
+      width: 11px; height: 11px;
+      border: 2px solid rgba(0,0,0,0.15);
+      border-top-color: var(--black); border-radius: 50%;
+      animation: spin 0.6s linear infinite; display: none;
     }
     .loading .spinner { display: block; }
+    .loading .spinner-dark { display: block; }
     .loading .btn-label { display: none; }
 
-    /* STATS BAR */
-    .stats-bar {
-      display: flex;
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-      background: var(--black);
-    }
-    .stat-item {
+    /* RESULTS */
+    .results-wrap {
       flex: 1;
-      padding: 10px 16px;
-      border-right: 1px solid #2a2a28;
-      text-align: center;
+      padding: 20px 24px;
+      overflow-y: auto;
+      min-height: 0;
     }
-    .stat-item:last-child { border-right: none; }
-    .stat-val { font-size: 15px; font-weight: 600; color: white; display: block; letter-spacing: -0.02em; }
-    .stat-lbl { font-size: 9px; color: #555552; text-transform: uppercase; letter-spacing: 0.08em; }
 
-    /* MAIN CONTENT */
-    .main { padding: 28px 32px; max-width: 1100px; }
-
-    /* INTRO STATE */
-    .intro-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-    .intro-card {
-      background: var(--white);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 20px;
-    }
-    .intro-card-title {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 9px;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--muted);
-      margin-bottom: 10px;
-    }
-    .field-list { display: flex; flex-direction: column; gap: 0; }
-    .field-row {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      padding: 7px 0;
-      border-bottom: 1px solid var(--border);
-    }
-    .field-row:last-child { border-bottom: none; }
-    .field-key {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 10px;
-      color: var(--accent);
-      min-width: 120px;
-      flex-shrink: 0;
-      padding-top: 1px;
-    }
-    .field-desc { font-size: 11px; color: var(--muted); line-height: 1.45; }
-
-    .intro-notice {
-      background: var(--white);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 16px 20px;
-      font-size: 11px;
-      color: var(--muted);
-      line-height: 1.6;
-    }
-    .intro-notice strong { color: var(--text); font-weight: 500; }
-
-    /* RESULTS STATE */
     #resultsArea { display: none; }
+    #retrieveResultArea { display: none; }
 
     .result-summary {
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      overflow: hidden;
-      margin-bottom: 20px;
+      border-radius: 8px; border: 1px solid var(--border);
+      overflow: hidden; margin-bottom: 16px;
     }
     .result-summary-head {
-      padding: 14px 18px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid var(--border);
+      padding: 12px 16px;
+      display: flex; align-items: center; justify-content: space-between;
     }
     .result-summary-head.is-match { background: var(--match-bg); border-color: #f0b8b3; }
     .result-summary-head.is-clean { background: var(--clean-bg); border-color: #b2dfc5; }
-    .result-summary-status { font-size: 14px; font-weight: 600; letter-spacing: -0.02em; }
+    .result-summary-head.is-retrieved { background: #f5f3ff; border-color: #c4b5fd; }
+    .result-summary-status { font-size: 13px; font-weight: 600; letter-spacing: -0.02em; }
     .result-summary-status.is-match { color: var(--match); }
     .result-summary-status.is-clean { color: var(--clean); }
+    .result-summary-status.is-retrieved { color: #6d28d9; }
     .result-summary-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
     .result-claim-ids {
       font-family: 'IBM Plex Mono', monospace;
-      font-size: 9px;
-      color: var(--faint);
-      text-align: right;
+      font-size: 9px; color: var(--faint); text-align: right;
     }
 
-    /* SOURCE CARDS */
-    .source-cards { display: flex; flex-direction: column; gap: 0; }
+    .source-cards { display: flex; flex-direction: column; }
     .source-card {
       background: var(--white);
-      border-bottom: 1px solid var(--border);
-      overflow: hidden;
+      border: 1px solid var(--border); border-bottom: none; overflow: hidden;
     }
     .source-card:first-child { border-radius: 8px 8px 0 0; }
-    .source-card:last-child { border-radius: 0 0 8px 8px; border-bottom: none; }
+    .source-card:last-child { border-radius: 0 0 8px 8px; border-bottom: 1px solid var(--border); }
     .source-card-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 18px;
-      cursor: pointer;
-      user-select: none;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 16px; cursor: pointer; user-select: none;
     }
     .source-card-head:hover { background: #fafaf8; }
-    .source-card-left { display: flex; align-items: center; gap: 10px; }
+    .source-card-left { display: flex; align-items: center; gap: 9px; }
     .sc-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
     .sc-dot.match { background: var(--match); }
     .sc-dot.clean { background: var(--clean); }
     .sc-dot.pending { background: var(--faint); animation: pulse 1s ease infinite; }
     .sc-name { font-size: 12px; font-weight: 500; }
-    .sc-count { font-size: 10px; color: var(--muted); margin-left: 4px; }
+    .sc-count { font-size: 10px; color: var(--muted); margin-left: 3px; }
     .sc-badge {
       font-size: 10px; font-weight: 500;
-      padding: 3px 9px;
-      border-radius: 20px;
-      display: flex; align-items: center; gap: 5px;
+      padding: 2px 8px; border-radius: 20px;
+      display: flex; align-items: center; gap: 4px;
     }
     .sc-badge.match { background: var(--match-bg); color: var(--match); border: 1px solid #f0b8b3; }
     .sc-badge.clean { background: var(--clean-bg); color: var(--clean); border: 1px solid #b2dfc5; }
     .sc-badge.pending { background: var(--bg); color: var(--muted); border: 1px solid var(--border); }
 
-    /* RECEIPT */
-    .receipt {
-      border-top: 1px solid var(--border);
-      background: #fafaf8;
-      display: none;
-    }
+    .receipt { border-top: 1px solid var(--border); background: #fafaf8; display: none; }
     .receipt.open { display: block; }
     .receipt-head {
-      padding: 8px 18px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      padding: 7px 16px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
       background: var(--white);
     }
-    .receipt-mono {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 10px;
-      color: var(--muted);
-      letter-spacing: 0.04em;
-    }
+    .receipt-mono { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); }
     .receipt-verdict {
-      font-size: 9px;
-      font-weight: 600;
-      padding: 2px 8px;
-      border-radius: 4px;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
+      font-size: 9px; font-weight: 600; padding: 2px 7px;
+      border-radius: 4px; text-transform: uppercase; letter-spacing: 0.06em;
     }
     .receipt-verdict.match { background: var(--match); color: white; }
     .receipt-verdict.clean { background: var(--clean); color: white; }
+    .receipt-verdict.retrieved { background: #6d28d9; color: white; }
     .receipt-table { width: 100%; }
     .rt-row { display: flex; border-bottom: 1px solid var(--border); }
     .rt-row:last-child { border-bottom: none; }
     .rt-row:nth-child(even) { background: var(--white); }
     .rt-key {
-      width: 160px;
-      flex-shrink: 0;
-      padding: 8px 14px;
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 9.5px;
-      color: var(--muted);
-      border-right: 1px solid var(--border);
-      display: flex;
-      align-items: center;
+      width: 150px; flex-shrink: 0; padding: 7px 12px;
+      font-family: 'IBM Plex Mono', monospace; font-size: 9px;
+      color: var(--muted); border-right: 1px solid var(--border);
+      display: flex; align-items: center;
     }
     .rt-val {
-      flex: 1;
-      padding: 8px 14px;
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 10px;
-      color: var(--text);
-      word-break: break-all;
-      line-height: 1.4;
-      display: flex;
-      align-items: center;
+      flex: 1; padding: 7px 12px;
+      font-family: 'IBM Plex Mono', monospace; font-size: 9.5px;
+      color: var(--text); word-break: break-all; line-height: 1.4;
+      display: flex; align-items: center;
     }
     .rt-val.v-match { color: var(--match); font-weight: 500; }
     .rt-val.v-clean { color: var(--clean); font-weight: 500; }
     .rt-val a { color: var(--accent); text-decoration: none; }
     .rt-val a:hover { text-decoration: underline; }
 
-    /* HITS */
-    .hits-section {
-      padding: 12px 18px;
-      border-top: 1px solid var(--border);
-      background: var(--match-bg);
-    }
+    .hits-section { padding: 10px 16px; border-top: 1px solid var(--border); background: var(--match-bg); }
     .hits-label {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 9px;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--match);
-      margin-bottom: 8px;
+      font-family: 'IBM Plex Mono', monospace; font-size: 9px;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--match); margin-bottom: 6px;
     }
     .hit-card {
-      background: var(--white);
-      border: 1px solid #f0b8b3;
-      border-radius: 6px;
-      padding: 10px 14px;
-      margin-bottom: 6px;
+      background: var(--white); border: 1px solid #f0b8b3;
+      border-radius: 6px; padding: 8px 12px; margin-bottom: 5px;
     }
     .hit-card:last-child { margin-bottom: 0; }
-    .hit-name { font-size: 12px; font-weight: 500; margin-bottom: 5px; color: var(--match); }
-    .hit-tags { display: flex; flex-wrap: wrap; gap: 4px; }
-    .hit-tag {
-      font-size: 9px;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-weight: 500;
-    }
+    .hit-name { font-size: 11px; font-weight: 500; margin-bottom: 4px; color: var(--match); }
+    .hit-tags { display: flex; flex-wrap: wrap; gap: 3px; }
+    .hit-tag { font-size: 9px; padding: 2px 5px; border-radius: 4px; font-weight: 500; }
     .hit-tag.type { background: #f1f5f9; color: #475569; }
     .hit-tag.score { background: var(--match-bg); color: var(--match); border: 1px solid #f0b8b3; }
     .hit-tag.prog { background: #f0f9ff; color: #0369a1; border: 1px solid #bae6fd; }
 
-    /* DATA VERSION */
     .version-row {
-      border-top: 1px solid var(--border);
-      background: #f5f5f2;
-      padding: 8px 18px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
+      border-top: 1px solid var(--border); background: #f5f5f2;
+      padding: 7px 16px; display: flex; align-items: center; gap: 12px;
     }
     .version-label {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 9px;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--muted);
-      white-space: nowrap;
+      font-family: 'IBM Plex Mono', monospace; font-size: 9px;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--muted); white-space: nowrap;
     }
     .version-hash {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 9px;
-      color: var(--faint);
-      word-break: break-all;
+      font-family: 'IBM Plex Mono', monospace; font-size: 9px;
+      color: var(--faint); word-break: break-all;
     }
 
-    /* DISCLAIMER */
+    .error-card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: 8px; padding: 20px; text-align: center;
+    }
+    .error-card-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 6px; }
+    .error-card-msg { font-size: 11px; color: var(--muted); }
+
     .disclaimer {
-      margin-top: 20px;
-      padding: 14px 18px;
+      margin-top: 16px; padding: 12px 16px;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; font-size: 10px;
+      color: var(--muted); line-height: 1.6;
+    }
+
+    /* RIGHT — REFERENCE */
+    .panel-right {
+      background: var(--bg);
+      overflow-y: auto;
+      padding: 14px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .ref-section {
       background: var(--white);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 10.5px;
-      color: var(--muted);
-      line-height: 1.6;
+      border-radius: 8px; overflow: hidden;
     }
+    .ref-section-title {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 9px; text-transform: uppercase;
+      letter-spacing: 0.1em; color: var(--muted);
+      padding: 9px 12px 7px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .field-list { display: flex; flex-direction: column; }
+    .field-row {
+      display: flex; flex-direction: row; align-items: baseline; gap: 8px;
+      padding: 6px 12px; border-bottom: 1px solid var(--border);
+    }
+    .field-row:last-child { border-bottom: none; }
+    .field-key { font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: var(--accent); white-space: nowrap; flex-shrink: 0; }
+    .field-desc { font-size: 9px; color: var(--muted); line-height: 1.4; }
 
-    /* FOOTER */
-    footer {
-      border-top: 1px solid var(--border);
-      background: var(--white);
-      padding: 12px 32px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-size: 10px;
-      color: var(--muted);
-      margin-top: 40px;
+    .ref-notice {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px 12px;
+      font-size: 9px; color: var(--muted); line-height: 1.6;
     }
+    .ref-notice strong { color: var(--text); font-weight: 500; }
 
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
     @keyframes spin { to { transform: rotate(360deg); } }
@@ -462,81 +387,98 @@
   </div>
 </nav>
 
-<div class="hero">
-  <div class="hero-eyebrow">Compliance Verification Infrastructure</div>
-  <h1>Sanctions Screening.<br>Cryptographically Proven.</h1>
-  <p class="hero-sub">Every check runs against live government sources and returns a tamper-evident receipt — tied to the exact data version active at that moment.</p>
+<div class="panels">
 
-  <div class="sources-row">
-    <div class="src-pill"><div class="src-pill-dot"></div>OFAC SDN List<span class="src-pill-count">18,664 entries</span></div>
-    <div class="src-pill"><div class="src-pill-dot"></div>BIS Denied Persons<span class="src-pill-count">1,941 entries</span></div>
-    <div class="src-pill"><div class="src-pill-dot"></div>OFAC Consolidated<span class="src-pill-count">442 entries</span></div>
-    <div class="src-pill"><div class="src-pill-dot"></div>OFAC SSI (Sectoral)<span class="src-pill-count">286 entries</span></div>
-  </div>
+  <!-- LEFT: WORKSPACE -->
+  <div class="panel-left">
 
-  <div class="search-row">
-    <input class="search-box" id="entityInput" type="text" placeholder="Try 'Rosneft' or 'Bin Ladin'" autocomplete="off" />
-    <button class="btn-verify" id="verifyBtn" onclick="runAll()">
-      <div class="spinner"></div>
-      <span class="btn-label">Verify All Sources</span>
-    </button>
-  </div>
-</div>
-
-<div class="stats-bar">
-  <div class="stat-item"><span class="stat-val">21,333</span><span class="stat-lbl">Total Entries</span></div>
-  <div class="stat-item"><span class="stat-val">4</span><span class="stat-lbl">Gov. Sources</span></div>
-  <div class="stat-item"><span class="stat-val">Multiple</span><span class="stat-lbl">Daily Updates</span></div>
-  <div class="stat-item"><span class="stat-val">&lt;200ms</span><span class="stat-lbl">Avg. Response</span></div>
-</div>
-
-<div class="main">
-
-  <!-- INTRO -->
-  <div id="introArea">
-    <div class="intro-grid">
-      <div class="intro-card">
-        <div class="intro-card-title">Receipt Field Guide</div>
-        <div class="field-list">
-          <div class="field-row"><span class="field-key">claim_id</span><span class="field-desc">Unique fingerprint for this check. Your retrievable proof of due diligence.</span></div>
-          <div class="field-row"><span class="field-key">verified_at</span><span class="field-desc">Exact UTC timestamp the live government source was queried — not cached.</span></div>
-          <div class="field-row"><span class="field-key">source_url</span><span class="field-desc">Direct link to the government database. Examiners can verify the source independently.</span></div>
-          <div class="field-row"><span class="field-key">result</span><span class="field-desc">MATCH or NO_MATCH against this source at this exact moment in time.</span></div>
-          <div class="field-row"><span class="field-key">match_score</span><span class="field-desc">100% = exact. 85–99% = fuzzy — catches misspellings and name variations.</span></div>
-          <div class="field-row"><span class="field-key">data_version</span><span class="field-desc">SHA-256 of the list version active at check time. Proves exactly what data was used.</span></div>
-        </div>
-      </div>
-      <div class="intro-card">
-        <div class="intro-card-title">How It Works</div>
-        <div class="field-list">
-          <div class="field-row"><span class="field-key">Step 1</span><span class="field-desc">Your system queries Inner-Circle with an entity name via API.</span></div>
-          <div class="field-row"><span class="field-key">Step 2</span><span class="field-desc">We screen against all four live government sources simultaneously.</span></div>
-          <div class="field-row"><span class="field-key">Step 3</span><span class="field-desc">We return a tamper-evident receipt for each source — match or no match.</span></div>
-          <div class="field-row"><span class="field-key">Step 4</span><span class="field-desc">The receipt is stored with a cryptographic hash of the data version used.</span></div>
-          <div class="field-row"><span class="field-key">Step 5</span><span class="field-desc">Years later, examiners can retrieve that receipt and verify the exact check.</span></div>
-        </div>
+    <div class="workspace-head" id="workspaceHead">
+      <div class="hero-eyebrow">Compliance Verification Infrastructure</div>
+      <h1>Sanctions Screening.<br>Cryptographically Proven.</h1>
+      <p class="hero-sub">Every check runs against live government sources and returns a tamper-evident receipt — tied to the exact data version active at that moment.</p>
+      <div class="sources-row">
+        <div class="src-pill"><div class="src-pill-dot"></div>OFAC SDN List<span class="src-pill-count">18,664 entries</span></div>
+        <div class="src-pill"><div class="src-pill-dot"></div>BIS Denied Persons<span class="src-pill-count">1,941 entries</span></div>
+        <div class="src-pill"><div class="src-pill-dot"></div>OFAC Consolidated<span class="src-pill-count">442 entries</span></div>
+        <div class="src-pill"><div class="src-pill-dot"></div>OFAC SSI (Sectoral)<span class="src-pill-count">286 entries</span></div>
       </div>
     </div>
-    <div class="intro-notice">
+
+    <div class="action-block">
+      <div class="action-label">Verify A Source — Enter a Name</div>
+      <div class="search-row">
+        <input class="search-box" id="entityInput" type="text" placeholder="Try 'Rosneft' or 'Bin Ladin'" autocomplete="off" />
+        <button class="btn-verify" id="verifyBtn" onclick="runAll()">
+          <div class="spinner"></div>
+          <span class="btn-label">Verify All Sources</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="action-block">
+      <div class="action-label">Retrieve A Verified Receipt</div>
+      <div class="search-row">
+        <input class="search-box" id="claimInput" type="text" placeholder="Retrieve a Receipt from a Previous Check" autocomplete="off" />
+        <button class="btn-retrieve" id="retrieveBtn" onclick="retrieveReceipt()">
+          <div class="spinner-dark"></div>
+          <span class="btn-label">Retrieve A Verified Receipt</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="results-wrap">
+
+      <div id="resultsArea">
+        <div id="summaryBlock"></div>
+        <div class="source-cards" id="sourceCards"></div>
+        <div class="disclaimer">
+          Inner-Circle provides custody of verification records, not legal compliance advice. Compliance determinations remain the responsibility of the querying organization. OFAC requires 5-year recordkeeping under 31 CFR Part 501.
+        </div>
+      </div>
+
+      <div id="retrieveResultArea">
+        <div id="retrieveBlock"></div>
+        <div class="disclaimer">
+          This receipt was retrieved from permanent storage. The claim_id, timestamp, source, and data version are exactly as recorded at the time of the original check. Nothing has changed.
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- RIGHT: REFERENCE -->
+  <div class="panel-right">
+
+    <div class="ref-section">
+      <div class="ref-section-title">Receipt Field Guide</div>
+      <div class="field-list">
+        <div class="field-row"><span class="field-key">claim_id</span><span class="field-desc">Unique fingerprint for this check. Your retrievable proof of due diligence.</span></div>
+        <div class="field-row"><span class="field-key">verified_at</span><span class="field-desc">Exact UTC timestamp the live government source was queried — not cached.</span></div>
+        <div class="field-row"><span class="field-key">source_url</span><span class="field-desc">Direct link to the government database. Examiners can verify the source independently.</span></div>
+        <div class="field-row"><span class="field-key">result</span><span class="field-desc">MATCH or NO_MATCH against this source at this exact moment in time.</span></div>
+        <div class="field-row"><span class="field-key">match_score</span><span class="field-desc">100% = exact. 85–99% = fuzzy — catches misspellings and name variations.</span></div>
+        <div class="field-row"><span class="field-key">data_version</span><span class="field-desc">SHA-256 of the list version active at check time. Proves exactly what data was used.</span></div>
+      </div>
+    </div>
+
+    <div class="ref-section">
+      <div class="ref-section-title">How It Works</div>
+      <div class="field-list">
+        <div class="field-row"><span class="field-key">Step 1</span><span class="field-desc">Your system queries Inner-Circle with an entity name via API.</span></div>
+        <div class="field-row"><span class="field-key">Step 2</span><span class="field-desc">We screen against all four live government sources simultaneously.</span></div>
+        <div class="field-row"><span class="field-key">Step 3</span><span class="field-desc">We return a tamper-evident receipt for each source — match or no match.</span></div>
+        <div class="field-row"><span class="field-key">Step 4</span><span class="field-desc">The receipt is stored with a cryptographic hash of the data version used.</span></div>
+        <div class="field-row"><span class="field-key">Step 5</span><span class="field-desc">Years later, examiners can retrieve that receipt and verify the exact check.</span></div>
+      </div>
+    </div>
+
+    <div class="ref-notice">
       <strong>OFAC requires 5-year recordkeeping under 31 CFR Part 501.</strong> Inner-Circle generates receipts that satisfy that requirement — tied to the exact government data version active at the time of the check. Not a log entry. A tamper-evident record.
     </div>
-  </div>
 
-  <!-- RESULTS -->
-  <div id="resultsArea">
-    <div id="summaryBlock"></div>
-    <div class="source-cards" id="sourceCards"></div>
-    <div class="disclaimer">
-      Inner-Circle provides custody of verification records, not legal compliance advice. Compliance determinations remain the responsibility of the querying organization. OFAC requires 5-year recordkeeping under 31 CFR Part 501.
-    </div>
   </div>
 
 </div>
-
-<footer>
-  <span>Inner-Circle by Axiom-Infra &nbsp;·&nbsp; Compliance Verification Infrastructure</span>
-  <span>All sources live &nbsp;·&nbsp; Updated multiple times daily</span>
-</footer>
 
 <script>
   const API_BASE = 'https://mic-api.onrender.com';
@@ -550,6 +492,7 @@
   ];
 
   document.getElementById('entityInput').addEventListener('keydown', e => { if (e.key === 'Enter') runAll(); });
+  document.getElementById('claimInput').addEventListener('keydown', e => { if (e.key === 'Enter') retrieveReceipt(); });
 
   function fmt(ts) {
     if (!ts) return '—';
@@ -565,12 +508,15 @@
     const name = document.getElementById('entityInput').value.trim();
     if (!name) return;
 
+    document.getElementById('retrieveResultArea').style.display = 'none';
+    document.getElementById('retrieveBlock').innerHTML = '';
+
     const btn = document.getElementById('verifyBtn');
     btn.disabled = true;
     btn.classList.add('loading');
 
-    document.getElementById('introArea').style.display = 'none';
     document.getElementById('resultsArea').style.display = 'block';
+    document.getElementById('workspaceHead').style.display = 'none';  
     document.getElementById('summaryBlock').innerHTML = '';
     document.getElementById('sourceCards').innerHTML = SOURCES.map((s,i) => `
       <div class="source-card" id="card-${i}">
@@ -673,11 +619,116 @@
         ${ver ? `<div class="version-row"><span class="version-label">Data Hash</span><span class="version-hash">${ver.content_hash}</span></div>` : ''}
       `;
 
-      // Auto-expand matches, collapse cleans
-      if (isMatch) {
-        receiptEl.classList.add('open');
-      }
+      if (isMatch) receiptEl.classList.add('open');
     });
+  }
+
+  async function retrieveReceipt() {
+    const claimId = document.getElementById('claimInput').value.trim();
+    if (!claimId) return;
+
+    document.getElementById('resultsArea').style.display = 'none';
+    document.getElementById('summaryBlock').innerHTML = '';
+    document.getElementById('sourceCards').innerHTML = '';
+
+    const btn = document.getElementById('retrieveBtn');
+    btn.disabled = true;
+    btn.classList.add('loading');
+
+    document.getElementById('retrieveResultArea').style.display = 'block';
+    document.getElementById('workspaceHead').style.display = 'none';
+    document.getElementById('retrieveBlock').innerHTML = `
+      <div class="result-summary">
+        <div class="result-summary-head">
+          <div class="result-summary-meta">Retrieving receipt…</div>
+        </div>
+      </div>
+    `;
+
+    try {
+      const response = await fetch(`${API_BASE}/receipt/${encodeURIComponent(claimId)}`, {
+        method: 'GET',
+        headers: { 'X-Api-Key': API_KEY }
+      });
+
+      btn.disabled = false;
+      btn.classList.remove('loading');
+
+      if (!response.ok) {
+        const errText = response.status === 404
+          ? 'No receipt found for that claim ID.'
+          : `Error ${response.status} — could not retrieve receipt.`;
+        document.getElementById('retrieveBlock').innerHTML = `
+          <div class="error-card">
+            <div class="error-card-title">Receipt Not Found</div>
+            <div class="error-card-msg">${errText}</div>
+          </div>
+        `;
+        return;
+      }
+
+      const data = await response.json();
+      const payload = data.payload || {};
+      const isMatch = payload.match === true;
+      const ver = data.data_version;
+      const entityName = data.entity_queried;
+      const sourceLabels = {
+        'ofac_sdn_verification': 'OFAC SDN List',
+        'ofac_verification': 'OFAC SDN List',
+        'bis_dpl_verification': 'BIS Denied Persons',
+        'bis_verification': 'BIS Denied Persons',
+        'ofac_consolidated_verification': 'OFAC Consolidated',
+        'ofac_consolidated': 'OFAC Consolidated',
+        'ssi_verification': 'OFAC SSI (Sectoral)',
+        'ssi': 'OFAC SSI (Sectoral)',
+      };
+      const source = sourceLabels[data.event_type] || payload.source_name || data.event_type;
+      const sourceUrl = payload.source_url;
+      const matchScore = payload.match_score;
+
+      document.getElementById('retrieveBlock').innerHTML = `
+        <div class="result-summary" style="animation:fadeUp 0.2s ease">
+          <div class="result-summary-head is-retrieved">
+            <div>
+              <div class="result-summary-status is-retrieved">Receipt Retrieved</div>
+              <div class="result-summary-meta">claim_id: ${claimId} &nbsp;·&nbsp; ${fmt(data.verified_at)}</div>
+            </div>
+          </div>
+        </div>
+        <div class="source-cards">
+          <div class="source-card" style="border-radius:8px; border-bottom:1px solid var(--border);">
+            <div class="receipt open">
+              <div class="receipt-head">
+                <span class="receipt-mono">VERIFIED RECEIPT</span>
+                <span class="receipt-verdict retrieved">RETRIEVED</span>
+              </div>
+             <div class="receipt-table">
+                <div class="rt-row"><div class="rt-key">claim_id</div><div class="rt-val">${data.claim_id || claimId}</div></div>
+                ${entityName ? `<div class="rt-row"><div class="rt-key">entity_queried</div><div class="rt-val">${entityName}</div></div>` : ''}
+                <div class="rt-row"><div class="rt-key">verified_at</div><div class="rt-val">${fmt(data.verified_at)}</div></div>
+                ${source ? `<div class="rt-row"><div class="rt-key">source</div><div class="rt-val">${source}</div></div>` : ''}
+                ${sourceUrl ? `<div class="rt-row"><div class="rt-key">source_url</div><div class="rt-val"><a href="${sourceUrl}" target="_blank">${sourceUrl.replace('https://', '')}</a></div></div>` : ''}
+                <div class="rt-row"><div class="rt-key">result</div><div class="rt-val ${isMatch ? 'v-match' : 'v-clean'}">${isMatch ? 'MATCH' : 'NO_MATCH'}</div></div>
+                ${matchScore !== undefined ? `<div class="rt-row"><div class="rt-key">match_score</div><div class="rt-val">${Math.round(matchScore * 100)}%</div></div>` : ''}
+                ${ver ? `<div class="rt-row"><div class="rt-key">list_version_id</div><div class="rt-val">${ver.version_id}</div></div>` : ''}
+                ${ver ? `<div class="rt-row"><div class="rt-key">entries_at_check</div><div class="rt-val">${ver.entry_count?.toLocaleString()}</div></div>` : ''}
+              </div>
+              ${ver ? `<div class="version-row"><span class="version-label">Data Hash</span><span class="version-hash">${ver.content_hash}</span></div>` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+
+    } catch (err) {
+      btn.disabled = false;
+      btn.classList.remove('loading');
+      document.getElementById('retrieveBlock').innerHTML = `
+        <div class="error-card">
+          <div class="error-card-title">Connection Error</div>
+          <div class="error-card-msg">${err.message}</div>
+        </div>
+      `;
+    }
   }
 
   function toggleReceipt(i) {
