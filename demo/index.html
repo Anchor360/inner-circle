@@ -22,12 +22,15 @@
       --clean: #1a7a4a;
       --clean-bg: #f0faf4;
       --accent: #1a3a8f;
+      --replay: #5b21b6;
+      --replay-bg: #f5f3ff;
+      --replay-border: #c4b5fd;
+      --watch: #0369a1;
+      --watch-bg: #f0f9ff;
+      --watch-border: #bae6fd;
     }
 
-    html, body {
-      height: 100%;
-      overflow: hidden;
-    }
+    html, body { height: 100%; overflow: hidden; }
 
     body {
       font-family: 'IBM Plex Sans', sans-serif;
@@ -42,11 +45,8 @@
       background: var(--white);
       border-bottom: 1px solid var(--border);
       padding: 0 24px;
-      height: 44px;
-      min-height: 44px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      height: 44px; min-height: 44px;
+      display: flex; align-items: center; justify-content: space-between;
       flex-shrink: 0;
     }
     .nav-left { display: flex; align-items: center; gap: 10px; }
@@ -70,6 +70,38 @@
     .nav-email { font-size: 11px; color: var(--muted); text-decoration: none; }
     .nav-email:hover { color: var(--accent); }
 
+    /* TABS */
+    .tab-bar {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      display: flex; align-items: flex-end;
+      gap: 0; flex-shrink: 0;
+      height: 38px; min-height: 38px;
+    }
+    .tab-btn {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px; font-weight: 500;
+      letter-spacing: 0.07em; text-transform: uppercase;
+      color: var(--muted);
+      padding: 0 16px; height: 38px;
+      border: none; background: none; cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      display: flex; align-items: center; gap: 6px;
+      transition: color 0.15s;
+      white-space: nowrap;
+    }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active { color: var(--text); border-bottom-color: var(--black); }
+    .tab-btn.active.t-replay { color: var(--replay); border-bottom-color: var(--replay); }
+    .tab-btn.active.t-watchlist { color: var(--watch); border-bottom-color: var(--watch); }
+    .tab-dot { width: 5px; height: 5px; border-radius: 50%; }
+    .tab-dot.verify { background: var(--black); }
+    .tab-dot.retrieve { background: var(--accent); }
+    .tab-dot.replay { background: var(--replay); }
+    .tab-dot.watchlist { background: var(--watch); }
+
     /* TWO PANEL LAYOUT */
     .panels {
       display: grid;
@@ -82,10 +114,13 @@
     .panel-left {
       background: var(--white);
       border-right: 2px solid var(--border);
-      display: flex;
-      flex-direction: column;
+      display: flex; flex-direction: column;
       overflow: hidden;
     }
+
+    /* TAB PANELS */
+    .tab-panel { display: none; flex-direction: column; flex: 1; overflow: hidden; }
+    .tab-panel.active { display: flex; }
 
     .workspace-head {
       padding: 16px 24px 14px;
@@ -118,7 +153,7 @@
     .src-pill-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--clean); animation: pulse 2.5s ease infinite; }
     .src-pill-count { font-size: 9px; color: var(--muted); font-weight: 400; }
 
-    /* ACTION BLOCKS */
+    /* ACTION BLOCK */
     .action-block {
       padding: 14px 24px;
       border-bottom: 1px solid var(--border);
@@ -141,8 +176,10 @@
     }
     .search-box::placeholder { color: var(--faint); }
     .search-box:focus { border-color: var(--black); background: var(--white); }
+    .search-box.focus-replay:focus { border-color: var(--replay); }
+    .search-box.focus-watch:focus { border-color: var(--watch); }
 
-    .btn-verify {
+    .btn-primary {
       height: 38px; padding: 0 18px;
       background: var(--black); color: white;
       border: none; border-radius: 7px;
@@ -152,10 +189,12 @@
       transition: opacity 0.15s;
       display: flex; align-items: center; gap: 7px;
     }
-    .btn-verify:hover { opacity: 0.85; }
-    .btn-verify:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-primary:hover { opacity: 0.85; }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-primary.replay-color { background: var(--replay); }
+    .btn-primary.watch-color { background: var(--watch); }
 
-    .btn-retrieve {
+    .btn-secondary {
       height: 38px; padding: 0 18px;
       background: var(--white); color: var(--black);
       border: 1px solid var(--border); border-radius: 7px;
@@ -165,8 +204,8 @@
       transition: all 0.15s;
       display: flex; align-items: center; gap: 7px;
     }
-    .btn-retrieve:hover { border-color: var(--black); background: var(--bg); }
-    .btn-retrieve:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-secondary:hover { border-color: var(--black); background: var(--bg); }
+    .btn-secondary:disabled { opacity: 0.4; cursor: not-allowed; }
 
     .spinner {
       width: 11px; height: 11px;
@@ -186,14 +225,9 @@
 
     /* RESULTS */
     .results-wrap {
-      flex: 1;
-      padding: 20px 24px;
-      overflow-y: auto;
-      min-height: 0;
+      flex: 1; padding: 20px 24px;
+      overflow-y: auto; min-height: 0;
     }
-
-    #resultsArea { display: none; }
-    #retrieveResultArea { display: none; }
 
     .result-summary {
       border-radius: 8px; border: 1px solid var(--border);
@@ -205,11 +239,16 @@
     }
     .result-summary-head.is-match { background: var(--match-bg); border-color: #f0b8b3; }
     .result-summary-head.is-clean { background: var(--clean-bg); border-color: #b2dfc5; }
-    .result-summary-head.is-retrieved { background: #f5f3ff; border-color: #c4b5fd; }
+    .result-summary-head.is-retrieved { background: #f5f3ff; border-color: var(--replay-border); }
+    .result-summary-head.is-replay { background: var(--replay-bg); border-color: var(--replay-border); }
+    .result-summary-head.is-watch { background: var(--watch-bg); border-color: var(--watch-border); }
+    .result-summary-head.is-neutral { background: var(--bg); }
     .result-summary-status { font-size: 13px; font-weight: 600; letter-spacing: -0.02em; }
     .result-summary-status.is-match { color: var(--match); }
     .result-summary-status.is-clean { color: var(--clean); }
-    .result-summary-status.is-retrieved { color: #6d28d9; }
+    .result-summary-status.is-retrieved { color: var(--replay); }
+    .result-summary-status.is-replay { color: var(--replay); }
+    .result-summary-status.is-watch { color: var(--watch); }
     .result-summary-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
     .result-claim-ids {
       font-family: 'IBM Plex Mono', monospace;
@@ -258,13 +297,15 @@
     }
     .receipt-verdict.match { background: var(--match); color: white; }
     .receipt-verdict.clean { background: var(--clean); color: white; }
-    .receipt-verdict.retrieved { background: #6d28d9; color: white; }
+    .receipt-verdict.retrieved { background: var(--replay); color: white; }
+    .receipt-verdict.replayed { background: var(--replay); color: white; }
+    .receipt-verdict.registered { background: var(--watch); color: white; }
     .receipt-table { width: 100%; }
     .rt-row { display: flex; border-bottom: 1px solid var(--border); }
     .rt-row:last-child { border-bottom: none; }
     .rt-row:nth-child(even) { background: var(--white); }
     .rt-key {
-      width: 150px; flex-shrink: 0; padding: 7px 12px;
+      width: 160px; flex-shrink: 0; padding: 7px 12px;
       font-family: 'IBM Plex Mono', monospace; font-size: 9px;
       color: var(--muted); border-right: 1px solid var(--border);
       display: flex; align-items: center;
@@ -277,6 +318,10 @@
     }
     .rt-val.v-match { color: var(--match); font-weight: 500; }
     .rt-val.v-clean { color: var(--clean); font-weight: 500; }
+    .rt-val.v-verified { color: var(--clean); font-weight: 500; }
+    .rt-val.v-consistent { color: var(--clean); font-weight: 500; }
+    .rt-val.v-replay { color: var(--replay); font-weight: 500; }
+    .rt-val.v-watch { color: var(--watch); font-weight: 500; }
     .rt-val a { color: var(--accent); text-decoration: none; }
     .rt-val a:hover { text-decoration: underline; }
 
@@ -298,6 +343,37 @@
     .hit-tag.score { background: var(--match-bg); color: var(--match); border: 1px solid #f0b8b3; }
     .hit-tag.prog { background: #f0f9ff; color: #0369a1; border: 1px solid #bae6fd; }
 
+    /* Replay hit cards */
+    .replay-hits-section { padding: 10px 16px; border-top: 1px solid var(--border); background: var(--replay-bg); }
+    .replay-hits-label {
+      font-family: 'IBM Plex Mono', monospace; font-size: 9px;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--replay); margin-bottom: 6px;
+    }
+    .replay-hit-card {
+      background: var(--white); border: 1px solid var(--replay-border);
+      border-radius: 6px; padding: 8px 12px; margin-bottom: 5px;
+    }
+    .replay-hit-card:last-child { margin-bottom: 0; }
+    .replay-hit-name { font-size: 11px; font-weight: 500; margin-bottom: 4px; color: var(--replay); }
+
+    /* Integrity block */
+    .integrity-section { padding: 10px 16px; border-top: 1px solid var(--border); background: var(--clean-bg); }
+    .integrity-label {
+      font-family: 'IBM Plex Mono', monospace; font-size: 9px;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--clean); margin-bottom: 6px;
+    }
+    .integrity-row {
+      display: flex; align-items: center; gap: 8px;
+      font-family: 'IBM Plex Mono', monospace; font-size: 9.5px;
+      margin-bottom: 4px;
+    }
+    .integrity-row:last-child { margin-bottom: 0; }
+    .integrity-check { color: var(--clean); font-weight: 600; }
+    .integrity-key { color: var(--muted); }
+    .integrity-val { color: var(--text); }
+
     .version-row {
       border-top: 1px solid var(--border); background: #f5f5f2;
       padding: 7px 16px; display: flex; align-items: center; gap: 12px;
@@ -310,6 +386,31 @@
     .version-hash {
       font-family: 'IBM Plex Mono', monospace; font-size: 9px;
       color: var(--faint); word-break: break-all;
+    }
+
+    /* Watchlist list */
+    .watch-list { margin-top: 16px; }
+    .watch-list-head {
+      font-family: 'IBM Plex Mono', monospace; font-size: 9px;
+      text-transform: uppercase; letter-spacing: 0.1em;
+      color: var(--muted); margin-bottom: 8px;
+    }
+    .watch-entry {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: 7px; padding: 10px 14px; margin-bottom: 6px;
+      display: flex; align-items: center; justify-content: space-between;
+      animation: fadeUp 0.2s ease;
+    }
+    .watch-entry-left { display: flex; align-items: center; gap: 9px; }
+    .watch-entry-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--watch); animation: pulse 2.5s ease infinite; flex-shrink: 0; }
+    .watch-entry-name { font-size: 12px; font-weight: 500; }
+    .watch-entry-meta { font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: var(--muted); margin-top: 2px; }
+    .watch-entry-badge {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 9px; font-weight: 500;
+      padding: 2px 8px; border-radius: 20px;
+      background: var(--watch-bg); color: var(--watch);
+      border: 1px solid var(--watch-border);
     }
 
     .error-card {
@@ -329,11 +430,8 @@
     /* RIGHT — REFERENCE */
     .panel-right {
       background: var(--bg);
-      overflow-y: auto;
-      padding: 14px 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
+      overflow-y: auto; padding: 14px 12px;
+      display: flex; flex-direction: column; gap: 10px;
     }
 
     .ref-section {
@@ -356,6 +454,8 @@
     }
     .field-row:last-child { border-bottom: none; }
     .field-key { font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: var(--accent); white-space: nowrap; flex-shrink: 0; }
+    .field-key.replay-key { color: var(--replay); }
+    .field-key.watch-key { color: var(--watch); }
     .field-desc { font-size: 9px; color: var(--muted); line-height: 1.4; }
 
     .ref-notice {
@@ -364,6 +464,10 @@
       font-size: 9px; color: var(--muted); line-height: 1.6;
     }
     .ref-notice strong { color: var(--text); font-weight: 500; }
+
+    /* Right panel tab-aware sections */
+    .right-section { display: none; flex-direction: column; gap: 10px; }
+    .right-section.active { display: flex; }
 
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
     @keyframes spin { to { transform: rotate(360deg); } }
@@ -387,136 +491,283 @@
   </div>
 </nav>
 
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('verify')" id="tab-verify">
+    <div class="tab-dot verify"></div>Verify
+  </button>
+  <button class="tab-btn" onclick="switchTab('retrieve')" id="tab-retrieve">
+    <div class="tab-dot retrieve"></div>Retrieve
+  </button>
+  <button class="tab-btn t-replay" onclick="switchTab('replay')" id="tab-replay">
+    <div class="tab-dot replay"></div>Replay
+  </button>
+  <button class="tab-btn t-watchlist" onclick="switchTab('watchlist')" id="tab-watchlist">
+    <div class="tab-dot watchlist"></div>Watchlist
+  </button>
+</div>
+
 <div class="panels">
 
   <!-- LEFT: WORKSPACE -->
   <div class="panel-left">
 
-    <div class="workspace-head" id="workspaceHead">
-      <div class="hero-eyebrow">Compliance Verification Infrastructure</div>
-      <h1>Sanctions Screening.<br>Cryptographically Proven.</h1>
-      <p class="hero-sub">Every check runs against live government sources and returns a tamper-evident receipt — tied to the exact data version active at that moment.</p>
-      <div class="sources-row">
-        <div class="src-pill"><div class="src-pill-dot"></div>OFAC SDN List<span class="src-pill-count">18,664 entries</span></div>
-        <div class="src-pill"><div class="src-pill-dot"></div>BIS Denied Persons<span class="src-pill-count">1,941 entries</span></div>
-        <div class="src-pill"><div class="src-pill-dot"></div>OFAC Consolidated<span class="src-pill-count">442 entries</span></div>
-        <div class="src-pill"><div class="src-pill-dot"></div>OFAC SSI (Sectoral)<span class="src-pill-count">286 entries</span></div>
-      </div>
-    </div>
-
-    <div class="action-block">
-      <div class="action-label">Verify A Source — Enter a Name</div>
-      <div class="search-row">
-        <input class="search-box" id="entityInput" type="text" placeholder="Try 'Rosneft' or 'Bin Ladin'" autocomplete="off" />
-        <button class="btn-verify" id="verifyBtn" onclick="runAll()">
-          <div class="spinner"></div>
-          <span class="btn-label">Verify All Sources</span>
-        </button>
-      </div>
-    </div>
-
-    <div class="action-block">
-      <div class="action-label">Retrieve A Verified Receipt</div>
-      <div class="search-row">
-        <input class="search-box" id="claimInput" type="text" placeholder="Retrieve a Receipt from a Previous Check" autocomplete="off" />
-        <button class="btn-retrieve" id="retrieveBtn" onclick="retrieveReceipt()">
-          <div class="spinner-dark"></div>
-          <span class="btn-label">Retrieve A Verified Receipt</span>
-        </button>
-      </div>
-    </div>
-
-    <div class="results-wrap">
-
-      <div id="resultsArea">
-        <div id="summaryBlock"></div>
-        <div class="source-cards" id="sourceCards"></div>
-        <div class="disclaimer">
-          Inner-Circle provides custody of verification records, not legal compliance advice. Compliance determinations remain the responsibility of the querying organization. OFAC requires 5-year recordkeeping under 31 CFR Part 501.
+    <!-- VERIFY TAB -->
+    <div class="tab-panel active" id="panel-verify">
+      <div class="workspace-head">
+        <div class="hero-eyebrow">Compliance Verification Infrastructure</div>
+        <h1>Sanctions Screening.<br>Cryptographically Proven.</h1>
+        <p class="hero-sub">Every check runs against live government sources and returns a tamper-evident receipt — tied to the exact data version active at that moment.</p>
+        <div class="sources-row">
+          <div class="src-pill"><div class="src-pill-dot"></div>OFAC SDN List<span class="src-pill-count">Live · Auto-updated</span></div>
+          <div class="src-pill"><div class="src-pill-dot"></div>BIS Denied Persons<span class="src-pill-count">Live · Auto-updated</span></div>
+          <div class="src-pill"><div class="src-pill-dot"></div>OFAC Consolidated<span class="src-pill-count">Live · Auto-updated</span></div>
+          <div class="src-pill"><div class="src-pill-dot"></div>OFAC SSI (Sectoral)<span class="src-pill-count">Live · Auto-updated</span></div>
         </div>
       </div>
-
-      <div id="retrieveResultArea">
-        <div id="retrieveBlock"></div>
-        <div class="disclaimer">
-          This receipt was retrieved from permanent storage. The claim_id, timestamp, source, and data version are exactly as recorded at the time of the original check. Nothing has changed.
+      <div class="action-block">
+        <div class="action-label">Enter a Name to Screen</div>
+        <div class="search-row">
+          <input class="search-box" id="entityInput" type="text" placeholder="Try 'Rosneft' or 'Bin Ladin'" autocomplete="off" />
+          <button class="btn-primary" id="verifyBtn" onclick="runAll()">
+            <div class="spinner"></div>
+            <span class="btn-label">Verify All Sources</span>
+          </button>
         </div>
       </div>
-
+      <div class="results-wrap">
+        <div id="resultsArea" style="display:none">
+          <div id="summaryBlock"></div>
+          <div class="source-cards" id="sourceCards"></div>
+          <div class="disclaimer">
+            Inner-Circle provides custody of verification records, not legal compliance advice. Compliance determinations remain the responsibility of the querying organization. OFAC requires 5-year recordkeeping under 31 CFR Part 501.
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
+
+    <!-- RETRIEVE TAB -->
+    <div class="tab-panel" id="panel-retrieve">
+      <div class="workspace-head">
+        <div class="hero-eyebrow">Receipt Retrieval</div>
+        <h1>Retrieve Any Receipt.<br>Exactly As Issued.</h1>
+        <p class="hero-sub">Every receipt is stored permanently. Enter a claim_id to retrieve the original record — timestamp, source, data version, and result unchanged.</p>
+      </div>
+      <div class="action-block">
+        <div class="action-label">Enter a Claim ID</div>
+        <div class="search-row">
+          <input class="search-box" id="claimInput" type="text" placeholder="Paste a claim_id from a previous check" autocomplete="off" />
+          <button class="btn-secondary" id="retrieveBtn" onclick="retrieveReceipt()">
+            <div class="spinner-dark"></div>
+            <span class="btn-label">Retrieve Receipt</span>
+          </button>
+        </div>
+      </div>
+      <div class="results-wrap">
+        <div id="retrieveResultArea" style="display:none">
+          <div id="retrieveBlock"></div>
+          <div class="disclaimer">
+            This receipt was retrieved from permanent storage. The claim_id, timestamp, source, and data version are exactly as recorded at the time of the original check. Nothing has changed.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REPLAY TAB -->
+    <div class="tab-panel" id="panel-replay">
+      <div class="workspace-head">
+        <div class="hero-eyebrow">Deterministic Replay</div>
+        <h1>Prove the Check.<br>Not Just the Result.</h1>
+        <p class="hero-sub">Replay re-runs the original check against the raw government data snapshot stored at ingestion time. Hash verification confirms the snapshot is unmodified. If the result matches, the receipt is proven.</p>
+      </div>
+      <div class="action-block">
+        <div class="action-label">Enter a Claim ID to Replay</div>
+        <div class="search-row">
+          <input class="search-box focus-replay" id="replayInput" type="text" placeholder="Paste a claim_id to verify the receipt" autocomplete="off" />
+          <button class="btn-primary replay-color" id="replayBtn" onclick="replayReceipt()">
+            <div class="spinner"></div>
+            <span class="btn-label">Replay Receipt</span>
+          </button>
+        </div>
+      </div>
+      <div class="results-wrap">
+        <div id="replayResultArea" style="display:none">
+          <div id="replayBlock"></div>
+          <div class="disclaimer">
+            Replay re-executes the original check against the exact government data version captured at ingestion time. A consistent result with a verified hash proves the receipt is authentic and the check was performed as documented.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WATCHLIST TAB -->
+    <div class="tab-panel" id="panel-watchlist">
+      <div class="workspace-head">
+        <div class="hero-eyebrow">Continuous Monitoring</div>
+        <h1>Register Once.<br>Monitored Always.</h1>
+        <p class="hero-sub">Add entities to the watchlist. Inner-Circle screens them automatically every four hours against all live government sources. Status changes trigger alerts.</p>
+      </div>
+      <div class="action-block">
+        <div class="action-label">Add Entity to Watchlist</div>
+        <div class="search-row">
+          <input class="search-box focus-watch" id="watchInput" type="text" placeholder="Enter an entity name to monitor" autocomplete="off" />
+          <button class="btn-primary watch-color" id="watchBtn" onclick="addToWatchlist()">
+            <div class="spinner"></div>
+            <span class="btn-label">Add to Watchlist</span>
+          </button>
+        </div>
+      </div>
+      <div class="results-wrap">
+        <div id="watchResultArea" style="display:none">
+          <div id="watchBlock"></div>
+        </div>
+        <div id="watchListArea">
+          <div id="watchListBlock"></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /panel-left -->
 
   <!-- RIGHT: REFERENCE -->
   <div class="panel-right">
 
-    <div class="ref-section">
-      <div class="ref-section-title">Receipt Field Guide</div>
-      <div class="field-list">
-        <div class="field-row"><span class="field-key">claim_id</span><span class="field-desc">Unique fingerprint for this check. Your retrievable proof of due diligence.</span></div>
-        <div class="field-row"><span class="field-key">verified_at</span><span class="field-desc">Exact UTC timestamp the live government source was queried — not cached.</span></div>
-        <div class="field-row"><span class="field-key">source_url</span><span class="field-desc">Direct link to the government database. Examiners can verify the source independently.</span></div>
-        <div class="field-row"><span class="field-key">result</span><span class="field-desc">MATCH or NO_MATCH against this source at this exact moment in time.</span></div>
-        <div class="field-row"><span class="field-key">match_score</span><span class="field-desc">100% = exact. 85–99% = fuzzy — catches misspellings and name variations.</span></div>
-        <div class="field-row"><span class="field-key">data_version</span><span class="field-desc">SHA-256 of the list version active at check time. Proves exactly what data was used.</span></div>
+    <!-- Verify reference -->
+    <div class="right-section active" id="right-verify">
+      <div class="ref-section">
+        <div class="ref-section-title">Receipt Field Guide</div>
+        <div class="field-list">
+          <div class="field-row"><span class="field-key">claim_id</span><span class="field-desc">Unique fingerprint for this check. Your retrievable proof of due diligence.</span></div>
+          <div class="field-row"><span class="field-key">verified_at</span><span class="field-desc">Exact UTC timestamp the live government source was queried — not cached.</span></div>
+          <div class="field-row"><span class="field-key">source_url</span><span class="field-desc">Direct link to the government database. Examiners can verify the source independently.</span></div>
+          <div class="field-row"><span class="field-key">result</span><span class="field-desc">MATCH or NO_MATCH against this source at this exact moment in time.</span></div>
+          <div class="field-row"><span class="field-key">match_score</span><span class="field-desc">100% = exact. 85–99% = fuzzy — catches misspellings and name variations.</span></div>
+          <div class="field-row"><span class="field-key">data_version</span><span class="field-desc">SHA-256 of the list version active at check time. Proves exactly what data was used.</span></div>
+        </div>
+      </div>
+      <div class="ref-section">
+        <div class="ref-section-title">How It Works</div>
+        <div class="field-list">
+          <div class="field-row"><span class="field-key">Step 1</span><span class="field-desc">Your system queries Inner-Circle with an entity name via API.</span></div>
+          <div class="field-row"><span class="field-key">Step 2</span><span class="field-desc">We screen against all four live government sources simultaneously.</span></div>
+          <div class="field-row"><span class="field-key">Step 3</span><span class="field-desc">We return a tamper-evident receipt for each source — match or no match.</span></div>
+          <div class="field-row"><span class="field-key">Step 4</span><span class="field-desc">The receipt is stored with a cryptographic hash of the data version used.</span></div>
+          <div class="field-row"><span class="field-key">Step 5</span><span class="field-desc">Years later, examiners can retrieve that receipt and verify the exact check.</span></div>
+        </div>
+      </div>
+      <div class="ref-notice">
+        <strong>OFAC requires 5-year recordkeeping under 31 CFR Part 501.</strong> Inner-Circle generates receipts that satisfy that requirement — tied to the exact government data version active at the time of the check. Not a log entry. A tamper-evident record.
       </div>
     </div>
 
-    <div class="ref-section">
-      <div class="ref-section-title">How It Works</div>
-      <div class="field-list">
-        <div class="field-row"><span class="field-key">Step 1</span><span class="field-desc">Your system queries Inner-Circle with an entity name via API.</span></div>
-        <div class="field-row"><span class="field-key">Step 2</span><span class="field-desc">We screen against all four live government sources simultaneously.</span></div>
-        <div class="field-row"><span class="field-key">Step 3</span><span class="field-desc">We return a tamper-evident receipt for each source — match or no match.</span></div>
-        <div class="field-row"><span class="field-key">Step 4</span><span class="field-desc">The receipt is stored with a cryptographic hash of the data version used.</span></div>
-        <div class="field-row"><span class="field-key">Step 5</span><span class="field-desc">Years later, examiners can retrieve that receipt and verify the exact check.</span></div>
+    <!-- Retrieve reference -->
+    <div class="right-section" id="right-retrieve">
+      <div class="ref-section">
+        <div class="ref-section-title">What Retrieval Proves</div>
+        <div class="field-list">
+          <div class="field-row"><span class="field-key">claim_id</span><span class="field-desc">Permanent identifier. The same ID issued at check time, unchanged.</span></div>
+          <div class="field-row"><span class="field-key">verified_at</span><span class="field-desc">The exact moment the original check ran. Immutable.</span></div>
+          <div class="field-row"><span class="field-key">data_version</span><span class="field-desc">The government list version active when the check ran. Not today's list.</span></div>
+          <div class="field-row"><span class="field-key">result</span><span class="field-desc">Match or no match at that exact moment. The record does not change if the list changes later.</span></div>
+        </div>
+      </div>
+      <div class="ref-notice">
+        <strong>When an examiner arrives, you retrieve — you don't reconstruct.</strong> The receipt was sealed at the time of the check. Retrieval returns exactly what was issued. No interpretation required.
       </div>
     </div>
 
-    <div class="ref-notice">
-      <strong>OFAC requires 5-year recordkeeping under 31 CFR Part 501.</strong> Inner-Circle generates receipts that satisfy that requirement — tied to the exact government data version active at the time of the check. Not a log entry. A tamper-evident record.
+    <!-- Replay reference -->
+    <div class="right-section" id="right-replay">
+      <div class="ref-section">
+        <div class="ref-section-title">Replay Field Guide</div>
+        <div class="field-list">
+          <div class="field-row"><span class="field-key replay-key">hash_verified</span><span class="field-desc">Confirms the stored snapshot matches the hash recorded at ingestion. The data has not been modified.</span></div>
+          <div class="field-row"><span class="field-key replay-key">result_consistent</span><span class="field-desc">The replay produced the same result as the original check. The receipt is authentic.</span></div>
+          <div class="field-row"><span class="field-key replay-key">computed_hash</span><span class="field-desc">SHA-256 of the raw snapshot re-computed at replay time.</span></div>
+          <div class="field-row"><span class="field-key replay-key">original_hash</span><span class="field-desc">SHA-256 recorded at the time of the original check. Must match computed_hash.</span></div>
+          <div class="field-row"><span class="field-key replay-key">event_hash</span><span class="field-desc">Cryptographic chain link to the immutable audit ledger.</span></div>
+        </div>
+      </div>
+      <div class="ref-section">
+        <div class="ref-section-title">Why Replay Matters</div>
+        <div class="field-list">
+          <div class="field-row"><span class="field-key">Log entry</span><span class="field-desc">Says a check was run. Cannot be verified.</span></div>
+          <div class="field-row"><span class="field-key">Receipt</span><span class="field-desc">Proves what the result was. Tied to a specific data version.</span></div>
+          <div class="field-row"><span class="field-key">Replay</span><span class="field-desc">Proves the receipt is authentic. Re-runs the check against the original raw data snapshot.</span></div>
+        </div>
+      </div>
+      <div class="ref-notice">
+        <strong>Replay is the moat.</strong> Any vendor can produce a log entry. Only Inner-Circle can replay a check against the exact government data that was live when it ran — and prove the result hasn't changed.
+      </div>
     </div>
 
-  </div>
+    <!-- Watchlist reference -->
+    <div class="right-section" id="right-watchlist">
+      <div class="ref-section">
+        <div class="ref-section-title">How Monitoring Works</div>
+        <div class="field-list">
+          <div class="field-row"><span class="field-key watch-key">Register</span><span class="field-desc">POST an entity name. Inner-Circle begins monitoring immediately.</span></div>
+          <div class="field-row"><span class="field-key watch-key">Screen</span><span class="field-desc">Every four hours, the scheduler screens all watchlist entities against all live sources.</span></div>
+          <div class="field-row"><span class="field-key watch-key">Detect</span><span class="field-desc">If status changes — clear to match, or match to clear — a receipt is issued and an alert fires.</span></div>
+          <div class="field-row"><span class="field-key watch-key">Alert</span><span class="field-desc">Webhook payload delivered to your registered endpoint with the new status and receipt ID.</span></div>
+          <div class="field-row"><span class="field-key watch-key">Receipt</span><span class="field-desc">Every screening event generates a tamper-evident receipt. Continuous coverage, permanent record.</span></div>
+        </div>
+      </div>
+      <div class="ref-notice">
+        <strong>Ongoing relationships require ongoing screening.</strong> Inner-Circle monitors continuously and alerts you when something changes — so you're never caught flat-footed in an examination.
+      </div>
+    </div>
 
-</div>
+  </div><!-- /panel-right -->
+
+</div><!-- /panels -->
 
 <script>
   const API_BASE = 'https://mic-api.onrender.com';
   const API_KEY  = 'INF-2026-DEMO-001';
 
   const SOURCES = [
-    { key:'ofac',              label:'OFAC SDN List',        endpoint:'/verify/ofac',              count:'18,664 entries', matchField:'ofac_match',              mono:'OFAC_SDN_LIST',        url:'https://sanctionslistservice.ofac.treas.gov/api/publicationpreview/exports/sdn.xml' },
-    { key:'bis',               label:'BIS Denied Persons',   endpoint:'/verify/bis',               count:'1,941 entries',  matchField:'bis_match',               mono:'BIS_DENIED_PERSONS',   url:'https://www.bis.doc.gov/dpl/dpl.txt' },
-    { key:'ofac-consolidated', label:'OFAC Consolidated',    endpoint:'/verify/ofac-consolidated', count:'442 entries',    matchField:'ofac_consolidated_match', mono:'OFAC_CONSOLIDATED',    url:'https://sanctionslistservice.ofac.treas.gov/api/publicationpreview/exports/consolidated.xml' },
-    { key:'ssi',               label:'OFAC SSI (Sectoral)',  endpoint:'/verify/ssi',               count:'286 entries',    matchField:'ssi_match',               mono:'OFAC_SSI_SECTORAL',    url:'https://sanctionslistservice.ofac.treas.gov/api/PublicationPreview/exports/CONSOLIDATED.XML' },
+    { key:'ofac',              label:'OFAC SDN List',        endpoint:'/verify/ofac',              count:'Live · Auto-updated', matchField:'ofac_match',              mono:'OFAC_SDN_LIST',        url:'https://sanctionslistservice.ofac.treas.gov/api/publicationpreview/exports/sdn.xml' },
+    { key:'bis',               label:'BIS Denied Persons',   endpoint:'/verify/bis',               count:'Live · Auto-updated',  matchField:'bis_match',               mono:'BIS_DENIED_PERSONS',   url:'https://www.bis.doc.gov/dpl/dpl.txt' },
+    { key:'ofac-consolidated', label:'OFAC Consolidated',    endpoint:'/verify/ofac-consolidated', count:'Live · Auto-updated',    matchField:'ofac_consolidated_match', mono:'OFAC_CONSOLIDATED',    url:'https://sanctionslistservice.ofac.treas.gov/api/publicationpreview/exports/consolidated.xml' },
+    { key:'ssi',               label:'OFAC SSI (Sectoral)',  endpoint:'/verify/ssi',               count:'Live · Auto-updated',    matchField:'ssi_match',               mono:'OFAC_SSI_SECTORAL',    url:'https://sanctionslistservice.ofac.treas.gov/api/PublicationPreview/exports/CONSOLIDATED.XML' },
   ];
 
+  // ─── Tab switching ────────────────────────────────────────────────
+  function switchTab(name) {
+    ['verify','retrieve','replay','watchlist'].forEach(t => {
+      document.getElementById(`tab-${t}`).classList.toggle('active', t === name);
+      document.getElementById(`panel-${t}`).classList.toggle('active', t === name);
+      document.getElementById(`right-${t}`).classList.toggle('active', t === name);
+    });
+    if (name === 'watchlist') loadWatchlist();
+  }
+
+  // ─── Keyboard listeners ───────────────────────────────────────────
   document.getElementById('entityInput').addEventListener('keydown', e => { if (e.key === 'Enter') runAll(); });
   document.getElementById('claimInput').addEventListener('keydown', e => { if (e.key === 'Enter') retrieveReceipt(); });
+  document.getElementById('replayInput').addEventListener('keydown', e => { if (e.key === 'Enter') replayReceipt(); });
+  document.getElementById('watchInput').addEventListener('keydown', e => { if (e.key === 'Enter') addToWatchlist(); });
 
+  // ─── Helpers ──────────────────────────────────────────────────────
   function fmt(ts) {
     if (!ts) return '—';
     return new Date(ts).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit',timeZoneName:'short'});
   }
-
   function truncate(s, n) {
     if (!s) return '—';
     return s.length > n ? s.slice(0, n) + '…' : s;
   }
 
+  // ─── VERIFY ───────────────────────────────────────────────────────
   async function runAll() {
     const name = document.getElementById('entityInput').value.trim();
     if (!name) return;
-
-    document.getElementById('retrieveResultArea').style.display = 'none';
-    document.getElementById('retrieveBlock').innerHTML = '';
 
     const btn = document.getElementById('verifyBtn');
     btn.disabled = true;
     btn.classList.add('loading');
 
     document.getElementById('resultsArea').style.display = 'block';
-    document.getElementById('workspaceHead').style.display = 'none';  
     document.getElementById('summaryBlock').innerHTML = '';
     document.getElementById('sourceCards').innerHTML = SOURCES.map((s,i) => `
       <div class="source-card" id="card-${i}">
@@ -570,10 +821,8 @@
       const { source: s, idx: i, data, error } = r;
       const isMatch = data && data[s.matchField];
       const hits = data?.hits || [];
-      const dotEl = document.getElementById(`dot-${i}`);
+      document.getElementById(`dot-${i}`).className = `sc-dot ${error ? 'pending' : isMatch ? 'match' : 'clean'}`;
       const badgeEl = document.getElementById(`badge-${i}`);
-
-      dotEl.className = `sc-dot ${error ? 'pending' : isMatch ? 'match' : 'clean'}`;
       badgeEl.className = `sc-badge ${error ? 'pending' : isMatch ? 'match' : 'clean'}`;
       badgeEl.textContent = error ? 'Error' : isMatch ? `${hits.length} match${hits.length !== 1 ? 'es' : ''}` : 'Clear';
 
@@ -586,13 +835,12 @@
           <div class="hits-label">Matched Entries</div>
           ${hits.slice(0, 5).map(h => {
             const score = h.match_score !== undefined ? h.match_score : 1;
-            const progs = (h.program_codes || []);
             return `<div class="hit-card">
-              <div class="hit-name">${h.name || ((h.first_name || '') + ' ' + (h.last_name || '')).trim()}</div>
+              <div class="hit-name">${h.name || ((h.first_name||'') + ' ' + (h.last_name||'')).trim()}</div>
               <div class="hit-tags">
                 ${h.entity_type ? `<span class="hit-tag type">${h.entity_type}</span>` : ''}
-                <span class="hit-tag score">Match ${Math.round(score * 100)}%</span>
-                ${progs.map(p => `<span class="hit-tag prog">${p}</span>`).join('')}
+                <span class="hit-tag score">Match ${Math.round(score*100)}%</span>
+                ${(h.program_codes||[]).map(p => `<span class="hit-tag prog">${p}</span>`).join('')}
               </div>
             </div>`;
           }).join('')}
@@ -609,7 +857,7 @@
           <div class="rt-row"><div class="rt-key">entity_queried</div><div class="rt-val">${name}</div></div>
           <div class="rt-row"><div class="rt-key">verified_at</div><div class="rt-val">${fmt(data?.verified_at)}</div></div>
           <div class="rt-row"><div class="rt-key">source</div><div class="rt-val">${s.label}</div></div>
-          <div class="rt-row"><div class="rt-key">source_url</div><div class="rt-val"><a href="${s.url}" target="_blank">${s.url.replace('https://', '')}</a></div></div>
+          <div class="rt-row"><div class="rt-key">source_url</div><div class="rt-val"><a href="${s.url}" target="_blank">${s.url.replace('https://','')}</a></div></div>
           <div class="rt-row"><div class="rt-key">result</div><div class="rt-val ${isMatch ? 'v-match' : 'v-clean'}">${isMatch ? 'MATCH' : 'NO_MATCH'}</div></div>
           ${data?.detail ? `<div class="rt-row"><div class="rt-key">detail</div><div class="rt-val">${data.detail}</div></div>` : ''}
           ${ver ? `<div class="rt-row"><div class="rt-key">list_version_id</div><div class="rt-val">${ver.version_id}</div></div>` : ''}
@@ -618,52 +866,35 @@
         ${hitsHTML}
         ${ver ? `<div class="version-row"><span class="version-label">Data Hash</span><span class="version-hash">${ver.content_hash}</span></div>` : ''}
       `;
-
       if (isMatch) receiptEl.classList.add('open');
     });
   }
 
+  function toggleReceipt(i) {
+    document.getElementById(`receipt-${i}`).classList.toggle('open');
+  }
+
+  // ─── RETRIEVE ─────────────────────────────────────────────────────
   async function retrieveReceipt() {
     const claimId = document.getElementById('claimInput').value.trim();
     if (!claimId) return;
 
-    document.getElementById('resultsArea').style.display = 'none';
-    document.getElementById('summaryBlock').innerHTML = '';
-    document.getElementById('sourceCards').innerHTML = '';
-
     const btn = document.getElementById('retrieveBtn');
     btn.disabled = true;
     btn.classList.add('loading');
-
     document.getElementById('retrieveResultArea').style.display = 'block';
-    document.getElementById('workspaceHead').style.display = 'none';
-    document.getElementById('retrieveBlock').innerHTML = `
-      <div class="result-summary">
-        <div class="result-summary-head">
-          <div class="result-summary-meta">Retrieving receipt…</div>
-        </div>
-      </div>
-    `;
+    document.getElementById('retrieveBlock').innerHTML = `<div class="result-summary"><div class="result-summary-head is-neutral"><div class="result-summary-meta">Retrieving receipt…</div></div></div>`;
 
     try {
       const response = await fetch(`${API_BASE}/receipt/${encodeURIComponent(claimId)}`, {
-        method: 'GET',
         headers: { 'X-Api-Key': API_KEY }
       });
-
       btn.disabled = false;
       btn.classList.remove('loading');
 
       if (!response.ok) {
-        const errText = response.status === 404
-          ? 'No receipt found for that claim ID.'
-          : `Error ${response.status} — could not retrieve receipt.`;
-        document.getElementById('retrieveBlock').innerHTML = `
-          <div class="error-card">
-            <div class="error-card-title">Receipt Not Found</div>
-            <div class="error-card-msg">${errText}</div>
-          </div>
-        `;
+        const msg = response.status === 404 ? 'No receipt found for that claim ID.' : `Error ${response.status}.`;
+        document.getElementById('retrieveBlock').innerHTML = `<div class="error-card"><div class="error-card-title">Receipt Not Found</div><div class="error-card-msg">${msg}</div></div>`;
         return;
       }
 
@@ -673,43 +904,36 @@
       const ver = data.data_version;
       const entityName = data.entity_queried;
       const sourceLabels = {
-        'ofac_sdn_verification': 'OFAC SDN List',
-        'ofac_verification': 'OFAC SDN List',
-        'bis_dpl_verification': 'BIS Denied Persons',
-        'bis_verification': 'BIS Denied Persons',
-        'ofac_consolidated_verification': 'OFAC Consolidated',
-        'ofac_consolidated': 'OFAC Consolidated',
-        'ssi_verification': 'OFAC SSI (Sectoral)',
-        'ssi': 'OFAC SSI (Sectoral)',
+        'ofac_sdn_verification':'OFAC SDN List','ofac_verification':'OFAC SDN List',
+        'bis_dpl_verification':'BIS Denied Persons','bis_verification':'BIS Denied Persons',
+        'ofac_consolidated_verification':'OFAC Consolidated','ofac_consolidated':'OFAC Consolidated',
+        'ssi_verification':'OFAC SSI (Sectoral)','ssi':'OFAC SSI (Sectoral)',
       };
       const source = sourceLabels[data.event_type] || payload.source_name || data.event_type;
-      const sourceUrl = payload.source_url;
-      const matchScore = payload.match_score;
 
       document.getElementById('retrieveBlock').innerHTML = `
         <div class="result-summary" style="animation:fadeUp 0.2s ease">
           <div class="result-summary-head is-retrieved">
             <div>
               <div class="result-summary-status is-retrieved">Receipt Retrieved</div>
-              <div class="result-summary-meta">claim_id: ${claimId} &nbsp;·&nbsp; ${fmt(data.verified_at)}</div>
+              <div class="result-summary-meta">claim_id: ${truncate(claimId,28)} &nbsp;·&nbsp; ${fmt(data.verified_at)}</div>
             </div>
           </div>
         </div>
         <div class="source-cards">
-          <div class="source-card" style="border-radius:8px; border-bottom:1px solid var(--border);">
+          <div class="source-card" style="border-radius:8px;border-bottom:1px solid var(--border);">
             <div class="receipt open">
               <div class="receipt-head">
                 <span class="receipt-mono">VERIFIED RECEIPT</span>
                 <span class="receipt-verdict retrieved">RETRIEVED</span>
               </div>
-             <div class="receipt-table">
+              <div class="receipt-table">
                 <div class="rt-row"><div class="rt-key">claim_id</div><div class="rt-val">${data.claim_id || claimId}</div></div>
                 ${entityName ? `<div class="rt-row"><div class="rt-key">entity_queried</div><div class="rt-val">${entityName}</div></div>` : ''}
                 <div class="rt-row"><div class="rt-key">verified_at</div><div class="rt-val">${fmt(data.verified_at)}</div></div>
                 ${source ? `<div class="rt-row"><div class="rt-key">source</div><div class="rt-val">${source}</div></div>` : ''}
-                ${sourceUrl ? `<div class="rt-row"><div class="rt-key">source_url</div><div class="rt-val"><a href="${sourceUrl}" target="_blank">${sourceUrl.replace('https://', '')}</a></div></div>` : ''}
+                ${payload.source_url ? `<div class="rt-row"><div class="rt-key">source_url</div><div class="rt-val"><a href="${payload.source_url}" target="_blank">${payload.source_url.replace('https://','')}</a></div></div>` : ''}
                 <div class="rt-row"><div class="rt-key">result</div><div class="rt-val ${isMatch ? 'v-match' : 'v-clean'}">${isMatch ? 'MATCH' : 'NO_MATCH'}</div></div>
-                ${matchScore !== undefined ? `<div class="rt-row"><div class="rt-key">match_score</div><div class="rt-val">${Math.round(matchScore * 100)}%</div></div>` : ''}
                 ${ver ? `<div class="rt-row"><div class="rt-key">list_version_id</div><div class="rt-val">${ver.version_id}</div></div>` : ''}
                 ${ver ? `<div class="rt-row"><div class="rt-key">entries_at_check</div><div class="rt-val">${ver.entry_count?.toLocaleString()}</div></div>` : ''}
               </div>
@@ -718,22 +942,204 @@
           </div>
         </div>
       `;
-
     } catch (err) {
       btn.disabled = false;
       btn.classList.remove('loading');
-      document.getElementById('retrieveBlock').innerHTML = `
-        <div class="error-card">
-          <div class="error-card-title">Connection Error</div>
-          <div class="error-card-msg">${err.message}</div>
-        </div>
-      `;
+      document.getElementById('retrieveBlock').innerHTML = `<div class="error-card"><div class="error-card-title">Connection Error</div><div class="error-card-msg">${err.message}</div></div>`;
     }
   }
 
-  function toggleReceipt(i) {
-    const el = document.getElementById(`receipt-${i}`);
-    el.classList.toggle('open');
+  // ─── REPLAY ───────────────────────────────────────────────────────
+  async function replayReceipt() {
+    const claimId = document.getElementById('replayInput').value.trim();
+    if (!claimId) return;
+
+    const btn = document.getElementById('replayBtn');
+    btn.disabled = true;
+    btn.classList.add('loading');
+    document.getElementById('replayResultArea').style.display = 'block';
+    document.getElementById('replayBlock').innerHTML = `<div class="result-summary"><div class="result-summary-head is-neutral"><div class="result-summary-meta">Replaying receipt…</div></div></div>`;
+
+    try {
+      const response = await fetch(`${API_BASE}/replay/${encodeURIComponent(claimId)}`, {
+        headers: { 'X-Api-Key': API_KEY }
+      });
+      btn.disabled = false;
+      btn.classList.remove('loading');
+
+      if (!response.ok) {
+        const msg = response.status === 404 ? 'No receipt found for that claim ID.' : `Error ${response.status}.`;
+        document.getElementById('replayBlock').innerHTML = `<div class="error-card"><div class="error-card-title">Replay Failed</div><div class="error-card-msg">${msg}</div></div>`;
+        return;
+      }
+
+      const d = await response.json();
+      const integ = d.integrity || {};
+      const orig = d.original_result || {};
+      const repl = d.replay_result || {};
+      const ver = d.data_version || {};
+      const hashOk = integ.hash_verified === true;
+      const consistent = d.result_consistent === true;
+      const hits = repl.hits || [];
+
+      let hitsHTML = '';
+      if (repl.match && hits.length > 0) {
+        hitsHTML = `<div class="replay-hits-section">
+          <div class="replay-hits-label">Replay Matched Entries</div>
+          ${hits.slice(0,5).map(h => `
+            <div class="replay-hit-card">
+              <div class="replay-hit-name">${h.name}</div>
+              <div class="hit-tags">
+                <span class="hit-tag score" style="background:var(--replay-bg);color:var(--replay);border-color:var(--replay-border)">Match ${Math.round((h.match_score||1)*100)}%</span>
+              </div>
+            </div>`).join('')}
+        </div>`;
+      }
+
+      document.getElementById('replayBlock').innerHTML = `
+        <div class="result-summary" style="animation:fadeUp 0.2s ease">
+          <div class="result-summary-head is-replay">
+            <div>
+              <div class="result-summary-status is-replay">
+                ${hashOk && consistent ? 'Receipt Proven — hash verified, result consistent' : 'Replay completed — review results below'}
+              </div>
+              <div class="result-summary-meta">Entity: "${d.entity}" &nbsp;·&nbsp; Replayed ${fmt(d.replayed_at)}</div>
+            </div>
+          </div>
+        </div>
+        <div class="source-cards">
+          <div class="source-card" style="border-radius:8px;border-bottom:1px solid var(--border);">
+            <div class="receipt open">
+              <div class="receipt-head">
+                <span class="receipt-mono">REPLAY RESULT</span>
+                <span class="receipt-verdict replayed">REPLAYED</span>
+              </div>
+              <div class="receipt-table">
+                <div class="rt-row"><div class="rt-key">receipt_id</div><div class="rt-val">${d.receipt_id}</div></div>
+                <div class="rt-row"><div class="rt-key">entity</div><div class="rt-val">${d.entity}</div></div>
+                <div class="rt-row"><div class="rt-key">original_check</div><div class="rt-val">${fmt(d.verified_at)}</div></div>
+                <div class="rt-row"><div class="rt-key">replayed_at</div><div class="rt-val">${fmt(d.replayed_at)}</div></div>
+                <div class="rt-row"><div class="rt-key">source</div><div class="rt-val">${d.source}</div></div>
+                <div class="rt-row"><div class="rt-key">list_version_id</div><div class="rt-val">${ver.version_id || '—'}</div></div>
+                <div class="rt-row"><div class="rt-key">hash_verified</div><div class="rt-val ${hashOk ? 'v-verified' : 'v-match'}">${hashOk ? 'TRUE — snapshot unmodified' : 'FALSE — snapshot mismatch'}</div></div>
+                <div class="rt-row"><div class="rt-key">result_consistent</div><div class="rt-val ${consistent ? 'v-consistent' : 'v-match'}">${consistent ? 'TRUE — matches original' : 'FALSE — result differs'}</div></div>
+                <div class="rt-row"><div class="rt-key">original_result</div><div class="rt-val ${orig.match ? 'v-match' : 'v-clean'}">${orig.match ? 'MATCH' : 'NO_MATCH'}</div></div>
+                <div class="rt-row"><div class="rt-key">replay_result</div><div class="rt-val ${repl.match ? 'v-match' : 'v-clean'}">${repl.match ? 'MATCH' : 'NO_MATCH'}</div></div>
+                ${orig.event_hash ? `<div class="rt-row"><div class="rt-key">event_hash</div><div class="rt-val">${orig.event_hash}</div></div>` : ''}
+              </div>
+              ${hitsHTML}
+              <div class="integrity-section">
+                <div class="integrity-label">Hash Verification</div>
+                <div class="integrity-row"><span class="integrity-check">${hashOk ? '✓' : '✗'}</span><span class="integrity-key">computed</span><span class="integrity-val">${integ.computed_hash || '—'}</span></div>
+                <div class="integrity-row"><span class="integrity-check">${hashOk ? '✓' : '✗'}</span><span class="integrity-key">original</span><span class="integrity-val">${integ.original_hash || '—'}</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    } catch (err) {
+      btn.disabled = false;
+      btn.classList.remove('loading');
+      document.getElementById('replayBlock').innerHTML = `<div class="error-card"><div class="error-card-title">Connection Error</div><div class="error-card-msg">${err.message}</div></div>`;
+    }
+  }
+
+  // ─── WATCHLIST ────────────────────────────────────────────────────
+  async function addToWatchlist() {
+    const name = document.getElementById('watchInput').value.trim();
+    if (!name) return;
+
+    const btn = document.getElementById('watchBtn');
+    btn.disabled = true;
+    btn.classList.add('loading');
+    document.getElementById('watchResultArea').style.display = 'block';
+    document.getElementById('watchBlock').innerHTML = `<div class="result-summary"><div class="result-summary-head is-neutral"><div class="result-summary-meta">Registering entity…</div></div></div>`;
+
+    try {
+      const response = await fetch(`${API_BASE}/watchlist`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Api-Key': API_KEY },
+        body: JSON.stringify({ entity_name: name, entity_type: 'individual' })
+      });
+      btn.disabled = false;
+      btn.classList.remove('loading');
+
+      if (!response.ok) {
+        const msg = `Error ${response.status} — could not register entity.`;
+        document.getElementById('watchBlock').innerHTML = `<div class="error-card"><div class="error-card-title">Registration Failed</div><div class="error-card-msg">${msg}</div></div>`;
+        return;
+      }
+
+      const data = await response.json();
+      document.getElementById('watchBlock').innerHTML = `
+        <div class="result-summary" style="animation:fadeUp 0.2s ease">
+          <div class="result-summary-head is-watch">
+            <div>
+              <div class="result-summary-status is-watch">Entity registered — monitoring active</div>
+              <div class="result-summary-meta">"${name}" will be screened every four hours against all live sources.</div>
+            </div>
+          </div>
+        </div>
+        <div class="source-cards">
+          <div class="source-card" style="border-radius:8px;border-bottom:1px solid var(--border);">
+            <div class="receipt open">
+              <div class="receipt-head">
+                <span class="receipt-mono">WATCHLIST ENTRY</span>
+                <span class="receipt-verdict registered">REGISTERED</span>
+              </div>
+              <div class="receipt-table">
+                <div class="rt-row"><div class="rt-key">watchlist_id</div><div class="rt-val">${data.id || data.watchlist_id || '—'}</div></div>
+                <div class="rt-row"><div class="rt-key">entity_name</div><div class="rt-val">${data.entity_name || name}</div></div>
+                <div class="rt-row"><div class="rt-key">status</div><div class="rt-val v-watch">MONITORING ACTIVE</div></div>
+                <div class="rt-row"><div class="rt-key">check_interval</div><div class="rt-val">Every 4 hours</div></div>
+                <div class="rt-row"><div class="rt-key">sources</div><div class="rt-val">OFAC SDN · BIS DPL · OFAC Consolidated</div></div>
+                <div class="rt-row"><div class="rt-key">added_at</div><div class="rt-val">${fmt(data.added_at || new Date().toISOString())}</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      document.getElementById('watchInput').value = '';
+      loadWatchlist();
+    } catch (err) {
+      btn.disabled = false;
+      btn.classList.remove('loading');
+      document.getElementById('watchBlock').innerHTML = `<div class="error-card"><div class="error-card-title">Connection Error</div><div class="error-card-msg">${err.message}</div></div>`;
+    }
+  }
+
+  async function loadWatchlist() {
+    try {
+      const response = await fetch(`${API_BASE}/watchlist`, {
+        headers: { 'X-Api-Key': API_KEY }
+      });
+      if (!response.ok) return;
+      const data = await response.json();
+      const entries = Array.isArray(data) ? data : (data.entries || data.watchlist || []);
+      if (!entries.length) {
+        document.getElementById('watchListBlock').innerHTML = '';
+        return;
+      }
+      document.getElementById('watchListBlock').innerHTML = `
+        <div class="watch-list">
+          <div class="watch-list-head">Active Watchlist — ${entries.length} entr${entries.length !== 1 ? 'ies' : 'y'}</div>
+          ${entries.map(e => `
+            <div class="watch-entry">
+              <div class="watch-entry-left">
+                <div class="watch-entry-dot"></div>
+                <div>
+                  <div class="watch-entry-name">${e.entity_name}</div>
+                  <div class="watch-entry-meta">Added ${fmt(e.added_at)} &nbsp;·&nbsp; ID ${e.id || e.watchlist_id}</div>
+                </div>
+              </div>
+              <span class="watch-entry-badge">MONITORING</span>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    } catch (e) {
+      // silent — list is supplementary
+    }
   }
 </script>
 </body>
