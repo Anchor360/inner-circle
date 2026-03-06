@@ -87,11 +87,11 @@ services:
     depends_on:
       - postgres
 
-  scheduler-monitor:
+  scheduler-watchlist:
     build: .
-    container_name: mic-scheduler-monitor
+    container_name: mic-scheduler-watchlist
     restart: always
-    command: python scripts/scheduler_monitor.py
+    command: python scripts/scheduler_watchlist.py
     env_file:
       - .env
     environment:
@@ -100,9 +100,11 @@ services:
       DB_NAME: mic
       DB_USER: mic_app
       DB_PASSWORD: mic_app_pass
-      MONITOR_INTERVAL_SECONDS: 3600
+      API_BASE: http://api:8000
+      SYSTEM_API_KEY: DEVKEY999
     depends_on:
       - postgres
+      - api
 
 volumes:
   postgres_data:
