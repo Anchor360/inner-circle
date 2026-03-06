@@ -41,6 +41,13 @@ def record_version(cur, content_hash, entry_count):
     """, (content_hash, entry_count))
     return cur.fetchone()[0]
 
+
+def save_snapshot(cur, version_id, content_hash, raw_text):
+    cur.execute("""
+        INSERT INTO ingestion_snapshots (version_id, source, content_hash, raw_bytes)
+        VALUES (%s, 'ofac_sdn', %s, %s)
+    """, (version_id, content_hash, raw_text))
+
 def get_latest_event_hash(cur):
     cur.execute("""
         SELECT event_hash FROM events
@@ -148,6 +155,7 @@ def run_once():
             inserted += 1
 
         version_id = record_version(cur, content_hash, inserted)
+        save_snapshot(cur, version_id, content_hash, raw_text)
         log_event(cur, "updated", content_hash, inserted, f"Ingested {inserted} entries from updated SDN list. Version ID: {version_id}")
         conn.commit()
         cur.close()
