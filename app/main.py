@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from app.routers.monitor import router as monitor_router
 from app.routers.watchlist import router as watchlist_router
+from app.routers.webhooks import router as webhooks_router
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from uuid import uuid4
@@ -25,6 +26,7 @@ from rapidfuzz import fuzz, process
 app = FastAPI(title="MIC POC", version="0.2")
 app.include_router(monitor_router)
 app.include_router(watchlist_router)
+app.include_router(webhooks_router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
